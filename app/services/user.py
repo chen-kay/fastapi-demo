@@ -84,4 +84,4 @@ class UserService(BaseService):
 
     async def create_superuser(self, model: UserCreate):
         """创建超级管理员"""
-        return self.create(model, is_superuser=1)
+        return await self.create(model, is_superuser=1)

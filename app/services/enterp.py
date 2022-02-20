@@ -1,15 +1,23 @@
-"""User Services module."""
+"""Enterp Services module."""
 
 import json
 from typing import Union
 
 from app.models import Enterp
-from app.schemas.models.enterp import EnterpModel
+from app.schemas.models.enterp import EnterpCreate, EnterpModel
 
 from .base import BaseService
 
 
 class EnterpService(BaseService):
+    async def get_by_domain(self, domain: str):
+        enterp = (
+            self.session.query(Enterp)
+            .filter(Enterp.domain == domain, Enterp.is_del == 0)
+            .first()
+        )
+        return enterp
+
     async def get_by_id(self, id: int):
         enterp = (
             self.session.query(Enterp)
@@ -35,3 +43,12 @@ class EnterpService(BaseService):
     async def is_active(self, user: Union[Enterp, EnterpModel]) -> bool:
         """是否可用"""
         return user.is_active
+
+    async def create(self, model: EnterpCreate):
+        """创建企业"""
+        ins = Enterp(**model.dict())
+
+        self.session.add(ins)
+        self.session.commit()
+        self.session.refresh(ins)
+        return ins

@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UserModel(BaseModel):
@@ -37,3 +37,13 @@ class UserCreate(BaseModel):
     alt_user_id: Optional[int] = None
 
     groups: List[int] = []
+
+
+class UserView(BaseModel):
+    id: int
+
+    username: str = Field(..., title="账号")
+    fullname: str = Field(..., title="姓名")
+
+    class Config:
+        orm_mode = True

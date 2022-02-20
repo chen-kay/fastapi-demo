@@ -1,6 +1,6 @@
 """Schemas User Model."""
 
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -20,3 +20,20 @@ class UserModel(BaseModel):
     class Config:
         orm_mode = True
 
+
+class UserCreate(BaseModel):
+    enterp_id: Optional[int] = None
+
+    user_name: str
+    username: str
+    fullname: str
+
+    password: str = "123456"
+
+    is_active: int = 1
+    is_admin: int = 0
+
+    add_user_id: Optional[int] = None
+    alt_user_id: Optional[int] = None
+
+    groups: List[int] = []

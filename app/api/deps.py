@@ -1,49 +1,70 @@
-from app import models, schemas
+from typing import Optional
+
+from app import models
 from app.core import security
 from app.core.config import settings
+from app.schemas.models.user import UserModel
+from app.services.enterp import EnterpService
 from app.services.user import UserService
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from .db import get_services
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"/login/account")
 
 
-def get_current_user(
+class TokenPayload(BaseModel):
+    sub: Optional[int] = None
+
+
+async def get_current_user(
     service: UserService = Depends(get_services(UserService)),
     token: str = Depends(reusable_oauth2),
-) -> models.User:
+) -> UserModel:
     try:
         payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
+            token,
+            settings.SECRET_KEY,
+            algorithms=[security.ALGORITHM],
         )
-        token_data = schemas.TokenPayload(**payload)
+        token_data = TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
-    user = service.get(token_data.sub)
+    user = await service.find_by_id(token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 
-def get_current_active_user(
-    current_user: models.User = Depends(get_current_user),
-) -> models.User:
-    if not crud.user.is_active(current_user):
+async def get_current_active_user(
+    user_service: UserService = Depends(get_services(UserService)),
+    enterp_service: EnterpService = Depends(get_services(EnterpService)),
+    current_user: UserModel = Depends(get_current_user),
+) -> UserModel:
+    if not current_user.is_superuser:
+        # 非超级管理员 查验企业状态
+        enterp = await enterp_service.find_by_id(current_user.enterp_id)
+        if not await enterp_service.is_active(enterp):
+            # 企业不可用
+            raise HTTPException(status_code=400, detail="Inactive user")
+    if not await user_service.is_active(current_user):
+        # 用户不可用
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
-def get_current_active_superuser(
-    current_user: models.User = Depends(get_current_user),
-) -> models.User:
-    if not crud.user.is_superuser(current_user):
+async def get_current_active_superuser(
+    service: UserService = Depends(get_services(UserService)),
+    current_user: UserModel = Depends(get_current_user),
+) -> UserModel:
+    if not await service.is_superuser(current_user):
+        # 非超级管理员
         raise HTTPException(
             status_code=400, detail="The user doesn't have enough privileges"
         )

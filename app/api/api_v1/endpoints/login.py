@@ -17,11 +17,9 @@ async def login_access_token(
     data: OAuth2PasswordRequestForm = Depends(),
     user_service: UserService = Depends(get_services(UserService)),
 ):
-    user_name = f"{data.username}@main"
+    user_name = data.username
     user = await user_service.authenticate(user_name=user_name, password=data.password)
-    if not user:
-        raise APIException("用户名密码错误")
-    elif not user_service.is_active(user):
+    if not user or not user_service.is_active(user):
         raise APIException("用户名密码错误")
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(

@@ -1,0 +1,18 @@
+fastapi
+uvicorn
+
+passlib[bcrypt]
+python-jose[cryptography]
+pydantic[dotenv]
+python-multipart
+
+aioredis # redis
+sqlalchemy
+loguru
+
+# sqlalchemy migrate
+alembic
+
+pylint
+black
+# yapf

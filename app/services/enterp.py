@@ -4,12 +4,32 @@ import json
 from typing import Union
 
 from app.models import Enterp
-from app.schemas.models.enterp import EnterpCreate, EnterpModel
+from app.schemas.models.enterp import EnterpCreate, EnterpFilter, EnterpModel
+from sqlalchemy.sql import or_
 
 from .base import BaseService
 
 
 class EnterpService(BaseService):
+    async def get_enterp_list(self, filter: EnterpFilter):
+        qs = self.session.query(Enterp).filter(Enterp.is_del == 0)
+        if filter.keyword:
+            qs = qs.filter(
+                or_(
+                    Enterp.domain.like(f"%{filter.keyword}%"),
+                    Enterp.name.like(f"%{filter.keyword}%"),
+                    Enterp.short_name.like(f"%{filter.keyword}%"),
+                )
+            )
+
+        total = qs.count()
+        qs = (
+            qs.offset((filter.page - 1) * filter.page_size)
+            .limit(filter.page_size)
+            .all()
+        )
+        return qs, total
+
     async def get_by_domain(self, domain: str):
         enterp = (
             self.session.query(Enterp)

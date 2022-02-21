@@ -1,8 +1,13 @@
 from app.api import deps
-from app.api.api_v1.deps.enterp import ApiEnterpCreate, ApiEnterpType
+from app.api.api_v1.deps.enterp import (
+    ApiEnterpCreate,
+    ApiEnterpFilter,
+    ApiEnterpList,
+    ApiEnterpType,
+)
 from app.api.db import get_services
 from app.core.exceptions import APIException
-from app.schemas.models.enterp import EnterpCreate
+from app.schemas.models.enterp import EnterpCreate, EnterpFilter
 from app.schemas.models.user import UserModel
 from app.services.enterp import EnterpService
 from fastapi import APIRouter, Depends
@@ -10,19 +15,14 @@ from fastapi import APIRouter, Depends
 router = APIRouter()
 
 
-# @router.get("/", summary="获取企业列表", response_model=EnterpList)
-# async def get_list(
-#     filters: EnterpFilter = Depends(get_enterp_filters),
-#     enterp_service: EnterpService = Depends(
-#         get_services(EnterpService),
-#     ),
-# ):
-#     enterps, total = await enterp_service.get_enterp_list(
-#         keyword=filters.keyword,
-#         page=filters.page,
-#         page_size=filters.page_size,
-#     )
-#     return EnterpList(total=total, data=enterps)
+@router.get("/", summary="获取企业列表", response_model=ApiEnterpList)
+async def get_list(
+    filters: ApiEnterpFilter = Depends(),
+    enterp_service: EnterpService = Depends(get_services(EnterpService)),
+):
+    model = EnterpFilter(**filters.dict())
+    enterps, total = await enterp_service.get_enterp_list(model)
+    return ApiEnterpList(total=total, data=enterps)
 
 
 @router.post("/", summary="新增企业信息", response_model=ApiEnterpType)
@@ -50,6 +50,6 @@ async def create(
     enterp_id: int,
     enterp_service: EnterpService = Depends(get_services(EnterpService)),
 ):
-    """新增企业信息"""
+    """获取企业信息"""
     enterp = await enterp_service.get_by_id(enterp_id)
     return enterp

@@ -1,7 +1,14 @@
 from datetime import datetime
+from typing import List, Optional
 
 from app.schemas.models.user import UserView
 from pydantic import BaseModel, Field
+
+
+class ApiEnterpFilter(BaseModel):
+    page: int = Field(1, title="页码")
+    page_size: int = Field(100, title="分页")
+    keyword: Optional[str] = Field("", title="关键字")
 
 
 class ApiEnterpType(BaseModel):
@@ -19,6 +26,17 @@ class ApiEnterpType(BaseModel):
 
     alt_user: UserView = Field(..., title="操作人")
     alt_at: datetime = Field(..., title="操作时间")
+
+    class Config:
+        orm_mode = True
+        json_encoders = {
+            datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+
+class ApiEnterpList(BaseModel):
+    data: List[ApiEnterpType] = Field(..., title="企业数据")
+    total: int = Field(..., title="总条数")
 
     class Config:
         orm_mode = True

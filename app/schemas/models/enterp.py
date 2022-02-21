@@ -1,8 +1,15 @@
 """Schemas Enterp Model."""
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
+
+
+class EnterpFilter(BaseModel):
+    page: int
+    page_size: int
+    keyword: Optional[str] = ""
 
 
 class EnterpModel(BaseModel):

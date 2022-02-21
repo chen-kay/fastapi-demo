@@ -1,10 +1,18 @@
 """Enterp Services module."""
 
 import json
+from datetime import datetime
 from typing import Union
 
 from app.models import Enterp
-from app.schemas.models.enterp import EnterpCreate, EnterpFilter, EnterpModel
+from app.schemas.models.enterp import (
+    EnterpCreate,
+    EnterpFilter,
+    EnterpModel,
+    EnterpUpdate,
+)
+from app.schemas.models.user import UserModel
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql import or_
 
 from .base import BaseService
@@ -56,7 +64,7 @@ class EnterpService(BaseService):
             ins = await self.get_by_id(id=id)
             enterp = EnterpModel.from_orm(ins)
             self.redis and await self.redis.set(
-                key, json.dumps(enterp.dict(), ensure_ascii=False)
+                key, json.dumps(enterp.dict(exclude_unset=True), ensure_ascii=False)
             )
         return enterp
 
@@ -66,9 +74,29 @@ class EnterpService(BaseService):
 
     async def create(self, model: EnterpCreate):
         """创建企业"""
-        ins = Enterp(**model.dict())
+        ins = Enterp(**model.dict(exclude_unset=True))
 
         self.session.add(ins)
         self.session.commit()
         self.session.refresh(ins)
         return ins
+
+    async def update(self, ins: Enterp, model: EnterpUpdate, current: UserModel):
+        """修改企业"""
+        obj_data = jsonable_encoder(ins)
+        update_data = model.dict(exclude_unset=True)
+        for field in obj_data:
+            if field in update_data:
+                setattr(ins, field, update_data[field])
+        self.session.add(ins)
+        self.session.commit()
+        self.session.refresh(ins)
+        return ins
+
+    async def delete(self, ins: Enterp, current: UserModel):
+        """删除企业"""
+        ins.del_user_id = current.id
+        ins.alt_at = datetime.now()
+        self.session.add(ins)
+        self.session.commit()
+        self.session.refresh(ins)

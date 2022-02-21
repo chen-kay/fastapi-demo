@@ -17,10 +17,8 @@ class ApiEnterpType(BaseModel):
     name: str = Field(..., title="企业名称")
     short_name: str = Field(None, title="企业简称")
 
-    uri: str = Field(None, title="官网")
-
+    website: str = Field(None, title="官网")
     desc: str = Field(None, title="备注信息")
-    encrypt: int = Field(1, title="数据加密 1.加密 0. 不加密")
 
     expire_at: datetime = Field(None, title="企业过期时间")
 
@@ -48,9 +46,18 @@ class ApiEnterpList(BaseModel):
 class ApiEnterpCreate(BaseModel):
     domain: str = Field(..., title="企业域名")
     name: str = Field(..., title="企业名称")
-    short_name: str = Field(None, title="企业简称")
+    short_name: str = Field("", title="企业简称")
 
-    website: str = Field(None, title="官网")
-    desc: str = Field(None, title="备注")
+    website: str = Field("", title="官网")
+    desc: str = Field("", title="备注")
+
+    expire_at: datetime = Field(None, title="过期时间")
+
+
+class ApiEnterpUpdate(BaseModel):
+    name: str = Field(..., title="企业名称")
+    short_name: str = Field("", title="企业简称")
+    website: str = Field("", title="官网")
+    desc: str = Field("", title="备注")
 
     expire_at: datetime = Field(None, title="过期时间")

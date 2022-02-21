@@ -40,3 +40,12 @@ class EnterpCreate(BaseModel):
 
     add_user_id: int
     alt_user_id: int
+
+
+class EnterpUpdate(BaseModel):
+    name: str
+    short_name: str = ""
+    website: str = ""
+    desc: str = ""
+
+    expire_at: datetime = None

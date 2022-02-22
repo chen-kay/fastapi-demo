@@ -12,5 +12,6 @@ api_router.include_router(
 api_router.include_router(
     enterp.router,
     tags=["企业管理"],
-    dependencies=[Depends(deps.get_current_active_superuser)],
+    prefix="/enterp",
+    # dependencies=[Depends(deps.get_current_active_superuser)],
 )

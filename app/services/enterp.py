@@ -81,7 +81,7 @@ class EnterpService(BaseService):
         self.session.refresh(ins)
         return ins
 
-    async def update(self, ins: Enterp, model: EnterpUpdate, current: UserModel):
+    async def update(self, ins: Enterp, model: EnterpUpdate, current: UserModel = None):
         """修改企业"""
         obj_data = jsonable_encoder(ins)
         update_data = model.dict(exclude_unset=True)
@@ -93,10 +93,14 @@ class EnterpService(BaseService):
         self.session.refresh(ins)
         return ins
 
-    async def delete(self, ins: Enterp, current: UserModel):
+    async def delete(self, ins: Enterp, current: UserModel = None):
         """删除企业"""
-        ins.del_user_id = current.id
+        # if current:
+        #     ins.del_user_id = current.id
+        ins.domain = f"{ins.id}_{ins.domain}"
+        ins.is_del = 1
         ins.alt_at = datetime.now()
         self.session.add(ins)
         self.session.commit()
         self.session.refresh(ins)
+        return ins

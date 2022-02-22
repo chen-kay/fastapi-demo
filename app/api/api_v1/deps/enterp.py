@@ -22,8 +22,8 @@ class ApiEnterpType(BaseModel):
 
     expire_at: datetime = Field(None, title="企业过期时间")
 
-    alt_user: UserView = Field(..., title="操作人")
-    alt_at: datetime = Field(..., title="操作时间")
+    alt_user: UserView = Field(None, title="操作人")
+    alt_at: datetime = Field(None, title="操作时间")
 
     class Config:
         orm_mode = True

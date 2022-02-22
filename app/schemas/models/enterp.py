@@ -38,9 +38,6 @@ class EnterpCreate(BaseModel):
 
     expire_at: datetime = None
 
-    add_user_id: int
-    alt_user_id: int
-
 
 class EnterpUpdate(BaseModel):
     name: str

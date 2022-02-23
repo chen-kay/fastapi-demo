@@ -32,7 +32,7 @@ class EnterpService(BaseService):
         ins = await crud.enterp.create(self.session, model=create_data)
         return ins
 
-    async def update(self, ins: Enterp, model: EnterpUpdate, current: UserModel):
+    async def update(self, ins: Enterp, model: EnterpUpdate, current: UserModel = None):
         """修改企业"""
         update_data = model.dict(exclude_unset=True)
 
@@ -42,7 +42,7 @@ class EnterpService(BaseService):
         ins = await crud.enterp.update(self.session, ins=ins, model=update_data)
         return ins
 
-    async def delete(self, ins: Enterp, current: UserModel):
+    async def delete(self, ins: Enterp, current: UserModel = None):
         """删除企业"""
         update_data = dict(
             del_user_id=current.id,

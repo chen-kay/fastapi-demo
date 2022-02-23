@@ -1,13 +1,9 @@
 from app.api import deps
-from app.api.api_v1.deps.enterp import (
-    ApiEnterpCreate,
-    ApiEnterpFilter,
-    ApiEnterpList,
-    ApiEnterpType,
-    ApiEnterpUpdate,
-)
+from app.api.api_v1.deps.enterp import (ApiEnterpCreate, ApiEnterpFilter,
+                                        ApiEnterpList, ApiEnterpType,
+                                        ApiEnterpUpdate)
 from app.api.db import get_services
-from app.core.exceptions import APIException
+from app.core.exceptions import APIException, NotFoundError
 from app.schemas.models.enterp import EnterpCreate, EnterpFilter, EnterpUpdate
 from app.schemas.models.user import UserModel
 from app.services.enterp import EnterpService
@@ -30,7 +26,7 @@ async def get_list(
 async def create(
     obj_in: ApiEnterpCreate,
     enterp_service: EnterpService = Depends(get_services(EnterpService)),
-    current: UserModel = Depends(deps.get_current_active_superuser),
+    # current: UserModel = Depends(deps.get_current_active_superuser),
 ):
     """新增企业信息"""
     enterp = await enterp_service.get_by_domain(obj_in.domain)
@@ -39,8 +35,8 @@ async def create(
 
     model = EnterpCreate(
         **obj_in.dict(exclude_unset=True),
-        add_user_id=current.id,
-        alt_user_id=current.id,
+        # add_user_id=current.id,
+        # alt_user_id=current.id,
     )
     enterp = await enterp_service.create(model)
     return enterp
@@ -61,12 +57,12 @@ async def update(
     enterp_id: int,
     obj_in: ApiEnterpUpdate,
     enterp_service: EnterpService = Depends(get_services(EnterpService)),
-    current: UserModel = Depends(deps.get_current_active_superuser),
+    # current: UserModel = Depends(deps.get_current_active_superuser),
 ):
     enterp = await enterp_service.get_by_id(enterp_id)
     model = EnterpUpdate(
         **obj_in.dict(exclude_unset=True),
-        alt_user_id=current.id,
+        # alt_user_id=current.id,
     )
     enterp = await enterp_service.update(enterp, model)
     return enterp
@@ -76,11 +72,13 @@ async def update(
 async def delete(
     enterp_id: int,
     enterp_service: EnterpService = Depends(get_services(EnterpService)),
-    current: UserModel = Depends(deps.get_current_active_superuser),
+    # current: UserModel = Depends(deps.get_current_active_superuser),
 ):
     enterp = await enterp_service.get_by_id(enterp_id)
-    model = EnterpUpdate(
-        del_user_id=current.id,
-    )
-    enterp = await enterp_service.delete(enterp, model)
+    if not enterp:
+        raise NotFoundError()
+    # model = EnterpUpdate(
+    #     del_user_id=current.id,
+    # )
+    enterp = await enterp_service.delete(enterp)
     return enterp

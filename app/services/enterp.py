@@ -72,22 +72,33 @@ class EnterpService(BaseService):
         """是否可用"""
         return user.is_active
 
-    async def create(self, model: EnterpCreate):
+    async def create(self, *, model: EnterpCreate, current: UserModel):
         """创建企业"""
         ins = Enterp(**model.dict(exclude_unset=True))
+        ins.alt_user_id = current.id
+        ins.add_user_id = current.id
 
         self.session.add(ins)
         self.session.commit()
         self.session.refresh(ins)
         return ins
 
-    async def update(self, ins: Enterp, model: EnterpUpdate, current: UserModel = None):
+    async def update(
+        self,
+        ins: Enterp,
+        *,
+        model: EnterpUpdate,
+        current: UserModel,
+    ):
         """修改企业"""
         obj_data = jsonable_encoder(ins)
         update_data = model.dict(exclude_unset=True)
         for field in obj_data:
             if field in update_data:
                 setattr(ins, field, update_data[field])
+
+        ins.alt_user_id = current.id
+
         self.session.add(ins)
         self.session.commit()
         self.session.refresh(ins)

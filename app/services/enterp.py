@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from typing import Union
 
+from app import crud
 from app.models import Enterp
 from app.schemas.models.enterp import (
     EnterpCreate,
@@ -12,75 +13,26 @@ from app.schemas.models.enterp import (
     EnterpUpdate,
 )
 from app.schemas.models.user import UserModel
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy.sql import or_
 
 from .base import BaseService
 
 
 class EnterpService(BaseService):
-    async def get_enterp_list(self, filter: EnterpFilter):
-        qs = self.session.query(Enterp).filter(Enterp.is_del == 0)
-        if filter.keyword:
-            qs = qs.filter(
-                or_(
-                    Enterp.domain.like(f"%{filter.keyword}%"),
-                    Enterp.name.like(f"%{filter.keyword}%"),
-                    Enterp.short_name.like(f"%{filter.keyword}%"),
-                )
-            )
-
-        total = qs.count()
-        qs = (
-            qs.offset((filter.page - 1) * filter.page_size)
-            .limit(filter.page_size)
-            .all()
+    async def get_enterp_list(self, model: EnterpFilter):
+        return await crud.enterp.get_enterp_list(
+            self.session,
+            keyword=model.keyword,
+            page=model.page,
+            page_size=model.page_size,
         )
-        return qs, total
-
-    async def get_by_domain(self, domain: str):
-        enterp = (
-            self.session.query(Enterp)
-            .filter(Enterp.domain == domain, Enterp.is_del == 0)
-            .first()
-        )
-        return enterp
-
-    async def get_by_id(self, id: int):
-        enterp = (
-            self.session.query(Enterp)
-            .filter(Enterp.id == id, Enterp.is_del == 0)
-            .first()
-        )
-        return enterp
-
-    async def find_by_id(self, id: int):
-        key = f"enterp:enterp_id:{id}"
-        if self.redis and await self.redis.exists(key):
-            enterp_str = await self.redis.get(key)
-            enterp_dict = json.loads(enterp_str)
-            enterp = EnterpModel(**enterp_dict)
-        else:
-            ins = await self.get_by_id(id=id)
-            enterp = EnterpModel.from_orm(ins)
-            self.redis and await self.redis.set(
-                key, json.dumps(enterp.dict(exclude_unset=True), ensure_ascii=False)
-            )
-        return enterp
-
-    async def is_active(self, user: Union[Enterp, EnterpModel]) -> bool:
-        """是否可用"""
-        return user.is_active
 
     async def create(self, *, model: EnterpCreate, current: UserModel):
         """创建企业"""
-        ins = Enterp(**model.dict(exclude_unset=True))
-        ins.alt_user_id = current.id
-        ins.add_user_id = current.id
+        create_data = model.dict(exclude_unset=True)
+        create_data["add_user_id"] = current.id
+        create_data["alt_user_id"] = current.id
 
-        self.session.add(ins)
-        self.session.commit()
-        self.session.refresh(ins)
+        ins = await crud.enterp.create(self.session, model=create_data)
         return ins
 
     async def update(
@@ -91,27 +43,61 @@ class EnterpService(BaseService):
         current: UserModel,
     ):
         """修改企业"""
-        obj_data = jsonable_encoder(ins)
         update_data = model.dict(exclude_unset=True)
-        for field in obj_data:
-            if field in update_data:
-                setattr(ins, field, update_data[field])
+        update_data["alt_user_id"] = current.id
 
-        ins.alt_user_id = current.id
-
-        self.session.add(ins)
-        self.session.commit()
-        self.session.refresh(ins)
+        ins = await crud.enterp.update(self.session, ins=ins, model=update_data)
+        await self.clear_cache(ins)
         return ins
 
-    async def delete(self, ins: Enterp, current: UserModel = None):
+    async def delete(self, ins: Enterp, *, current: UserModel):
         """删除企业"""
-        # if current:
-        #     ins.del_user_id = current.id
-        ins.domain = f"{ins.id}_{ins.domain}"
-        ins.is_del = 1
-        ins.alt_at = datetime.now()
-        self.session.add(ins)
-        self.session.commit()
-        self.session.refresh(ins)
+        update_data = dict(del_user_id=current.id)
+        ins = await crud.enterp.delete(self.session, ins=ins, model=update_data)
+        await self.clear_cache(ins)
         return ins
+
+    async def get_by_domain(self, domain: str):
+        return await crud.enterp.get_by_domain(self.session, domain=domain)
+
+    async def get_by_id(self, id: int):
+        return await crud.enterp.get_by_id(self.session, id=id)
+
+    async def find_by_id(self, id: int):
+        key = f"enterp:id:{id}"
+        if self.redis and await self.redis.exists(key):
+            enterp_str = await self.redis.get(key)
+            enterp_dict = json.loads(enterp_str)
+            model = EnterpModel(**enterp_dict)
+        else:
+            ins = await self.get_by_id(id)
+            model = EnterpModel.from_orm(ins)
+            self.redis and await self.redis.set(
+                key, json.dumps(model.dict(exclude_unset=True), ensure_ascii=False)
+            )
+        return model
+
+    async def find_by_domain(self, domain: str):
+        key = f"enterp:domain:{domain}"
+        if self.redis and await self.redis.exists(key):
+            enterp_str = await self.redis.get(key)
+            enterp_dict = json.loads(enterp_str)
+            model = EnterpModel(**enterp_dict)
+        else:
+            ins = await self.get_by_domain(domain)
+            model = EnterpModel.from_orm(ins)
+            self.redis and await self.redis.set(
+                key, json.dumps(model.dict(exclude_unset=True), ensure_ascii=False)
+            )
+        return model
+
+    async def is_active(self, user: Union[Enterp, EnterpModel]) -> bool:
+        """是否可用"""
+        return user.is_active
+
+    async def clear_cache(self, ins: Enterp):
+        """清除缓存"""
+        if not self.redis:
+            return
+        self.redis.delete(f"enterp:id:{ins.id}")
+        self.redis.delete(f"enterp:domain:{ins.domain}")

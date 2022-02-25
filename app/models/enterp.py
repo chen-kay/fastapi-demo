@@ -14,7 +14,7 @@ class Enterp(Base):
     website = Column(String, comment="官网")
     desc = Column(Text, comment="备注")
 
-    is_active = Column(Integer, default=1, server_default="1", comment="状态 1.正常 2.禁用 3.到期")
+    is_active = Column(Integer, default=1, server_default="1", comment="状态 1.正常 2.禁用")
     expire_at = Column(DateTime, comment="到期时间")
 
     add_user_id = Column(Integer, ForeignKey("user.id"))

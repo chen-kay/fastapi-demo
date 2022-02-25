@@ -44,5 +44,3 @@ class EnterpUpdate(BaseModel):
     short_name: str = ""
     website: str = ""
     desc: str = ""
-
-    expire_at: datetime = None

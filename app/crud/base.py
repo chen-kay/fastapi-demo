@@ -59,7 +59,6 @@ class BaseCrud(Generic[ModelType]):
                 setattr(ins, field, model[field])
 
         ins.is_del = 1
-        ins.alt_at = datetime.now()
         session.add(ins)
         session.commit()
         return ins

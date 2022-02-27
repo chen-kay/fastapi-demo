@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field
 
 
 class ApiEnterpFilter(BaseModel):
+    is_active: Optional[int] = Field(None, title="状态")
+    
     page: int = Field(1, title="页码")
     page_size: int = Field(100, title="分页")
     keyword: Optional[str] = Field("", title="关键字")

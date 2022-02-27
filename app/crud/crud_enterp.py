@@ -6,8 +6,6 @@ from .base import BaseCrud
 
 
 class EnterpCrud(BaseCrud[Enterp]):
-    model = Enterp
-
     async def get_enterp_list(
         self,
         session: Session,

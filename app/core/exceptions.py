@@ -38,3 +38,7 @@ class PermissionDenied(APIException):
 
 class NotFoundError(APIException):
     default_detail = "您所操作的对象已不存在."
+
+
+class ExistsError(APIException):
+    default_detail = ""

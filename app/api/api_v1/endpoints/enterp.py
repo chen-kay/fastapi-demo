@@ -7,7 +7,7 @@ from app.api.api_v1.deps.enterp import (
     ApiEnterpUpdate,
 )
 from app.api.db import get_services
-from app.core.exceptions import APIException, NotFoundError
+from app.core.exceptions import ExistsError, NotFoundError
 from app.schemas.models.enterp import EnterpCreate, EnterpFilter, EnterpUpdate
 from app.schemas.models.user import UserModel
 from app.services.enterp import EnterpService
@@ -36,7 +36,7 @@ async def create(
     """新增企业信息"""
     ins = await enterp_service.get_by_domain(obj_in.domain)
     if ins:
-        raise APIException(f"域名: {obj_in.domain} 已存在.")
+        raise ExistsError(f"域名: {obj_in.domain} 已存在.")
 
     model = EnterpCreate(
         **obj_in.dict(exclude_unset=True),

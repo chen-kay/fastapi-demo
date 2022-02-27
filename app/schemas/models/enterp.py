@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 
 class EnterpFilter(BaseModel):
+    is_active: Optional[int] = None
     page: int
     page_size: int
     keyword: Optional[str] = ""

@@ -4,21 +4,15 @@ from typing import List
 
 from app import crud
 from app.models import Group
-from app.schemas.models.group import (GroupCreate, GroupFilter, GroupModel,
-                                      GroupUpdate)
+from app.schemas.models.group import GroupCreate, GroupUpdate
 from app.schemas.models.user import UserModel
 
 from .base import BaseService
 
 
 class GroupService(BaseService):
-    async def get_group_list(self, model: GroupFilter):
-        return await crud.group.get_group_list(
-            self.session,
-            keyword=model.keyword,
-            page=model.page,
-            page_size=model.page_size,
-        )
+    async def get_group_list(self):
+        return await crud.group.get_group_list(self.session)
 
     async def create(self, *, model: GroupCreate, current: UserModel):
         """创建用户组"""

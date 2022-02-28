@@ -5,12 +5,6 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
-class GroupFilter(BaseModel):
-    page: int
-    page_size: int
-    keyword: Optional[str] = ""
-
-
 class GroupModel(BaseModel):
     id: int
 

@@ -12,7 +12,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 router = APIRouter()
 
 
-@router.post("/login/account", summary="登录认证", response_model=LoginType)
+@router.post("/login", summary="登录认证", response_model=LoginType)
 async def login_access_token(
     data: OAuth2PasswordRequestForm = Depends(),
     user_service: UserService = Depends(get_services(UserService)),

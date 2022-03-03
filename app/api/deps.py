@@ -13,7 +13,7 @@ from pydantic import BaseModel, ValidationError
 
 from .db import get_services
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"/login/account")
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"/login")
 
 
 class TokenPayload(BaseModel):

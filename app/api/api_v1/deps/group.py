@@ -1,15 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
 
-from app.schemas.models.group import GroupView
 from app.schemas.models.user import UserView
 from pydantic import BaseModel, Field
-
-
-class ApiGroupFilter(BaseModel):
-    page: int = Field(1, title="页码")
-    page_size: int = Field(100, title="分页")
-    keyword: str = Field("", title="关键字")
 
 
 class ApiGroupType(BaseModel):

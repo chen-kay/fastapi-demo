@@ -1,13 +1,12 @@
 from app.api import deps
 from app.api.api_v1.deps.group import (
     ApiGroupCreate,
-    ApiGroupFilter,
     ApiGroupList,
     ApiGroupType,
     ApiGroupUpdate,
 )
 from app.core.exceptions import ExistsError, NotFoundError
-from app.schemas.models.group import GroupCreate, GroupFilter, GroupUpdate
+from app.schemas.models.group import GroupCreate, GroupUpdate
 from app.schemas.models.user import UserModel
 from app.services.group import GroupService
 from fastapi import APIRouter, Depends
@@ -17,12 +16,10 @@ router = APIRouter()
 
 @router.get("/", summary="获取用户组列表", response_model=ApiGroupList)
 async def get_list(
-    filters: ApiGroupFilter = Depends(),
     group_service: GroupService = Depends(),
 ):
     """获取用户组列表"""
-    model = GroupFilter(**filters.dict(exclude_unset=True))
-    data, total = await group_service.get_group_list(model)
+    data, total = await group_service.get_group_list()
     data = await group_service.get_tree_data(data)
     return ApiGroupList(total=total, data=data)
 

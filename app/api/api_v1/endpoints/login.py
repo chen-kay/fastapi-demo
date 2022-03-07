@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from app.api.deps import get_services
 from app.core import security
 from app.core.config import settings
 from app.core.exceptions import APIException
@@ -15,7 +14,7 @@ router = APIRouter()
 @router.post("/login", summary="登录认证", response_model=LoginType)
 async def login_access_token(
     data: OAuth2PasswordRequestForm = Depends(),
-    user_service: UserService = Depends(get_services(UserService)),
+    user_service: UserService = Depends(UserService),
 ):
     user_name = data.username
     user = await user_service.authenticate(user_name=user_name, password=data.password)

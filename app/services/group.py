@@ -4,17 +4,18 @@ from typing import List
 
 from app import crud
 from app.models import Group
-from app.schemas.models.group import (GroupCreate, GroupFilter, GroupModel,
-                                      GroupUpdate)
+from app.schemas.models.group import GroupCreate, GroupFilter, GroupUpdate
 from app.schemas.models.user import UserModel
 
 from .base import BaseService
 
 
 class GroupService(BaseService):
+    def initializer(self):
+        self.group = crud.Group(self.session, self.redis)
+
     async def get_group_list(self, model: GroupFilter):
-        return await crud.group.get_group_list(
-            self.session,
+        return await self.group.get_group_list(
             keyword=model.keyword,
             page=model.page,
             page_size=model.page_size,
@@ -26,7 +27,7 @@ class GroupService(BaseService):
         create_data["add_user_id"] = current.id
         create_data["alt_user_id"] = current.id
 
-        ins = await crud.group.create(self.session, model=create_data)
+        ins = await self.group.create(create_data)
         return ins
 
     async def update(
@@ -40,20 +41,20 @@ class GroupService(BaseService):
         update_data = model.dict(exclude_unset=True)
         update_data["alt_user_id"] = current.id
 
-        ins = await crud.group.update(self.session, ins=ins, model=update_data)
+        ins = await self.group.update(ins, model=update_data)
         return ins
 
     async def delete(self, ins: Group, *, current: UserModel):
         """删除用户组"""
         update_data = dict(del_user_id=current.id)
-        ins = await crud.group.delete(self.session, ins=ins, model=update_data)
+        ins = await self.group.delete(ins, model=update_data)
         return ins
 
     async def get_by_id(self, id: int):
-        return await crud.group.get_by_id(self.session, id=id)
+        return await self.group.get_by_id(id)
 
     async def get_by_name(self, name: str, pid_id: int = None):
-        return await crud.group.get_by_name(self.session, name=name, pid_id=pid_id)
+        return await self.group.get_by_name(name, pid_id=pid_id)
 
     async def get_tree_data(self, data: List[Group], pid_id=0):
         res = []

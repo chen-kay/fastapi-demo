@@ -6,7 +6,6 @@ from app.api.api_v1.deps.group import (
     ApiGroupType,
     ApiGroupUpdate,
 )
-from app.api.db import get_services
 from app.core.exceptions import ExistsError, NotFoundError
 from app.schemas.models.group import GroupCreate, GroupFilter, GroupUpdate
 from app.schemas.models.user import UserModel
@@ -19,7 +18,7 @@ router = APIRouter()
 @router.get("/", summary="获取用户组列表", response_model=ApiGroupList)
 async def get_list(
     filters: ApiGroupFilter = Depends(),
-    group_service: GroupService = Depends(get_services(GroupService)),
+    group_service: GroupService = Depends(),
 ):
     """获取用户组列表"""
     model = GroupFilter(**filters.dict(exclude_unset=True))
@@ -31,7 +30,7 @@ async def get_list(
 @router.post("/", summary="新增用户组信息", response_model=ApiGroupType)
 async def create(
     obj_in: ApiGroupCreate,
-    group_service: GroupService = Depends(get_services(GroupService)),
+    group_service: GroupService = Depends(),
     current: UserModel = Depends(deps.get_current_active_user),
 ):
     """新增用户组信息"""
@@ -49,7 +48,7 @@ async def create(
 @router.get("/{group_id}", summary="获取用户组信息", response_model=ApiGroupType)
 async def retrieve(
     group_id: int,
-    group_service: GroupService = Depends(get_services(GroupService)),
+    group_service: GroupService = Depends(),
 ):
     """获取用户组信息"""
     ins = await group_service.get_by_id(group_id)
@@ -60,7 +59,7 @@ async def retrieve(
 async def update(
     group_id: int,
     obj_in: ApiGroupUpdate,
-    group_service: GroupService = Depends(get_services(GroupService)),
+    group_service: GroupService = Depends(),
     current: UserModel = Depends(deps.get_current_active_user),
 ):
     ins = await group_service.get_by_id(group_id)
@@ -74,7 +73,7 @@ async def update(
 @router.delete("/{group_id}", summary="删除用户组信息", response_model=ApiGroupType)
 async def delete(
     group_id: int,
-    group_service: GroupService = Depends(get_services(GroupService)),
+    group_service: GroupService = Depends(),
     current: UserModel = Depends(deps.get_current_active_user),
 ):
     ins = await group_service.get_by_id(group_id)

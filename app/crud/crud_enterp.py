@@ -1,21 +1,24 @@
+import json
+
 from app.models import Enterp
-from sqlalchemy.orm import Session
+from app.schemas.models.enterp import EnterpModel
 from sqlalchemy.sql import or_
 
 from .base import BaseCrud
 
 
 class EnterpCrud(BaseCrud[Enterp]):
+    model = Enterp
+
     async def get_enterp_list(
         self,
-        session: Session,
         *,
         keyword: str,
         is_active: int = None,
         page: int,
         page_size: int,
     ):
-        qs = session.query(Enterp).filter(Enterp.is_del == 0)
+        qs = self.session.query(Enterp).filter(Enterp.is_del == 0)
         if is_active:
             qs = qs.filter(Enterp.is_active == is_active)
         if keyword:
@@ -31,13 +34,45 @@ class EnterpCrud(BaseCrud[Enterp]):
         qs = qs.offset((page - 1) * page_size).limit(page_size).all()
         return qs, total
 
-    async def get_by_domain(self, session: Session, *, domain: str):
+    async def get_by_domain(self, domain: str):
         ins = (
-            session.query(Enterp)
+            self.session.query(Enterp)
             .filter(Enterp.domain == domain, Enterp.is_del == 0)
             .first()
         )
         return ins
 
+    async def find_by_id(self, id: int):
+        key = f"enterp:id:{id}"
+        if self.redis and await self.redis.exists(key):
+            enterp_str = await self.redis.get(key)
+            enterp_dict = json.loads(enterp_str)
+            model = EnterpModel(**enterp_dict)
+        else:
+            ins = await self.get_by_id(id)
+            model = EnterpModel.from_orm(ins)
+            self.redis and await self.redis.set(
+                key, json.dumps(model.dict(exclude_unset=True), ensure_ascii=False)
+            )
+        return model
 
-enterp = EnterpCrud(Enterp)
+    async def find_by_domain(self, domain: str):
+        key = f"enterp:domain:{domain}"
+        if self.redis and await self.redis.exists(key):
+            enterp_str = await self.redis.get(key)
+            enterp_dict = json.loads(enterp_str)
+            model = EnterpModel(**enterp_dict)
+        else:
+            ins = await self.get_by_domain(domain)
+            model = EnterpModel.from_orm(ins)
+            self.redis and await self.redis.set(
+                key, json.dumps(model.dict(exclude_unset=True), ensure_ascii=False)
+            )
+        return model
+
+    async def clear_cache(self, ins: Enterp):
+        """清除缓存"""
+        if not self.redis:
+            return
+        self.redis.delete(f"enterp:id:{ins.id}")
+        self.redis.delete(f"enterp:domain:{ins.domain}")

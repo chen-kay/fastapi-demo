@@ -1,13 +1,18 @@
 """Schemas Enterp Model."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import date, datetime
+from typing import List, Optional
 
 from pydantic import BaseModel
 
 
 class EnterpFilter(BaseModel):
+    domain: Optional[str] = ""
+    name: Optional[str] = ""
+    short_name: Optional[str] = ""
+    expire_at: List[date] = []
     is_active: Optional[int] = None
+
     page: int
     page_size: int
     keyword: Optional[str] = ""
@@ -37,7 +42,7 @@ class EnterpCreate(BaseModel):
     website: str = ""
     desc: str = ""
 
-    expire_at: datetime = None
+    expire_at: date = None
 
 
 class EnterpUpdate(BaseModel):
@@ -45,3 +50,5 @@ class EnterpUpdate(BaseModel):
     short_name: str = ""
     website: str = ""
     desc: str = ""
+
+    expire_at: date = None

@@ -1,4 +1,6 @@
 import json
+from datetime import date
+from typing import List
 
 from app.models import Enterp
 from app.schemas.models.enterp import EnterpModel
@@ -13,12 +15,24 @@ class EnterpCrud(BaseCrud[Enterp]):
     async def get_enterp_list(
         self,
         *,
-        keyword: str,
+        domain: str = "",
+        name: str = "",
+        short_name: str = "",
+        expire_at: List[date] = [],
         is_active: int = None,
+        keyword: str = "",
         page: int,
         page_size: int,
     ):
         qs = self.session.query(Enterp).filter(Enterp.is_del == 0)
+        if domain:
+            qs = qs.filter(Enterp.domain.like(f"%{domain}%"))
+        if name:
+            qs = qs.filter(Enterp.name.like(f"%{name}%"))
+        if short_name:
+            qs = qs.filter(Enterp.short_name.like(f"%{short_name}%"))
+        if expire_at:
+            qs = qs.filter(Enterp.expire_at.between(expire_at[0], expire_at[1]))
         if is_active:
             qs = qs.filter(Enterp.is_active == is_active)
         if keyword:

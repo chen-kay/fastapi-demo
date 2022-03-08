@@ -1,23 +1,34 @@
+from datetime import date
+from typing import List
+
 from app.api import deps
-from app.api.api_v1.deps.enterp import (ApiEnterpCreate, ApiEnterpFilter,
-                                        ApiEnterpList, ApiEnterpType,
-                                        ApiEnterpUpdate)
+from app.api.api_v1.deps.enterp import (
+    ApiEnterpCreate,
+    ApiEnterpFilter,
+    ApiEnterpList,
+    ApiEnterpType,
+    ApiEnterpUpdate,
+)
 from app.core.exceptions import ExistsError, NotFoundError
 from app.schemas.models.enterp import EnterpCreate, EnterpFilter, EnterpUpdate
 from app.schemas.models.user import UserModel
 from app.services.enterp import EnterpService
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 router = APIRouter()
 
 
 @router.get("/", summary="获取企业列表", response_model=ApiEnterpList)
 async def get_list(
+    expire_at: List[date] = Query([]),
     filters: ApiEnterpFilter = Depends(),
     enterp_service: EnterpService = Depends(),
 ):
     """获取企业列表"""
     model = EnterpFilter(**filters.dict(exclude_unset=True))
+    print(expire_at)
+    print(filters)
+    print(model)
     data, total = await enterp_service.get_enterp_list(model)
     return ApiEnterpList(total=total, data=data)
 
@@ -58,6 +69,8 @@ async def update(
     current: UserModel = Depends(deps.get_current_active_superuser),
 ):
     ins = await enterp_service.get_by_id(enterp_id)
+    if not ins:
+        raise NotFoundError()
     model = EnterpUpdate(
         **obj_in.dict(exclude_unset=True),
     )

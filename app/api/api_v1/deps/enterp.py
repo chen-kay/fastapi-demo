@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, Optional
 
 from app.schemas.models.user import UserView
@@ -6,8 +6,12 @@ from pydantic import BaseModel, Field
 
 
 class ApiEnterpFilter(BaseModel):
+    expire_at: List[date] = Field([], multiple_of=2, title="到期时间")
+    domain: str = Field("", title="企业域名")
+    name: str = Field("", title="企业名称")
+    short_name: str = Field("", title="企业简称")
     is_active: Optional[int] = Field(None, title="状态")
-    
+
     page: int = Field(1, title="页码")
     page_size: int = Field(100, title="分页")
     keyword: Optional[str] = Field("", title="关键字")
@@ -22,10 +26,12 @@ class ApiEnterpType(BaseModel):
     website: str = Field(None, title="官网")
     desc: str = Field(None, title="备注信息")
 
-    expire_at: datetime = Field(None, title="企业过期时间")
+    expire_at: date = Field(None, title="企业过期时间")
 
     alt_user: UserView = Field(None, title="操作人")
+
     alt_at: datetime = Field(None, title="操作时间")
+    add_at: datetime = Field(None, title="创建时间")
 
     class Config:
         orm_mode = True
@@ -53,7 +59,7 @@ class ApiEnterpCreate(BaseModel):
     website: str = Field("", title="官网")
     desc: str = Field("", title="备注")
 
-    expire_at: datetime = Field(None, title="过期时间")
+    expire_at: date = Field(None, title="过期时间")
 
 
 class ApiEnterpUpdate(BaseModel):
@@ -62,4 +68,4 @@ class ApiEnterpUpdate(BaseModel):
     website: str = Field("", title="官网")
     desc: str = Field("", title="备注")
 
-    expire_at: datetime = Field(None, title="过期时间")
+    expire_at: date = Field(None, title="过期时间")

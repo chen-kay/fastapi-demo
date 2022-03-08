@@ -20,9 +20,14 @@ class EnterpService(BaseService):
         self.enterp = crud.Enterp(self.session, self.redis)
 
     async def get_enterp_list(self, model: EnterpFilter):
+        print(model)
         return await self.enterp.get_enterp_list(
-            keyword=model.keyword,
+            domain=model.domain,
+            name=model.name,
+            short_name=model.short_name,
+            expire_at=model.expire_at,
             is_active=model.is_active,
+            keyword=model.keyword,
             page=model.page,
             page_size=model.page_size,
         )
@@ -47,7 +52,7 @@ class EnterpService(BaseService):
         update_data = model.dict(exclude_unset=True)
         update_data["alt_user_id"] = current.id
 
-        ins = await crud.enterp.update(ins, model=update_data)
+        ins = await self.enterp.update(ins, model=update_data)
         await self.enterp.clear_cache(ins)
         return ins
 

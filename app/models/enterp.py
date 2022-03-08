@@ -1,7 +1,7 @@
 """Enterp Model."""
 
 from app.db.base_class import Base
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, Date, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 
@@ -15,7 +15,7 @@ class Enterp(Base):
     desc = Column(Text, comment="备注")
 
     is_active = Column(Integer, default=1, server_default="1", comment="状态 1.正常 2.禁用")
-    expire_at = Column(DateTime, comment="到期时间")
+    expire_at = Column(Date, comment="到期时间")
 
     add_user_id = Column(Integer, ForeignKey("user.id"))
     add_user = relationship("User", foreign_keys=[add_user_id])

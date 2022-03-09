@@ -1,20 +1,24 @@
+from dataclasses import dataclass
 from datetime import date, datetime
 from typing import List, Optional
 
+from app.api.deps import PageFilter, PageModel
 from app.schemas.models.user import UserView
+from fastapi import Query
 from pydantic import BaseModel, Field
+from pydantic.main import BaseModel
 
 
-class ApiEnterpFilter(BaseModel):
-    expire_at: List[date] = Field([], multiple_of=2, title="到期时间")
-    domain: str = Field("", title="企业域名")
-    name: str = Field("", title="企业名称")
-    short_name: str = Field("", title="企业简称")
-    is_active: Optional[int] = Field(None, title="状态")
-
-    page: int = Field(1, title="页码")
-    page_size: int = Field(100, title="分页")
-    keyword: Optional[str] = Field("", title="关键字")
+@dataclass
+class ApiEnterpFilter(PageFilter):
+    expire_at: List[date] = Query([], title="到期时间")
+    domain: str = Query("", title="企业域名")
+    name: str = Query("", title="企业名称")
+    short_name: str = Query("", title="企业简称")
+    is_active: Optional[int] = Query(None, title="状态")
+    page: int = Query(1, title="页码")
+    page_size: int = Query(100, title="分页")
+    keyword: Optional[str] = Query("", title="关键字")
 
 
 class ApiEnterpType(BaseModel):
@@ -40,15 +44,8 @@ class ApiEnterpType(BaseModel):
         }
 
 
-class ApiEnterpList(BaseModel):
-    data: List[ApiEnterpType] = Field(..., title="企业数据")
-    total: int = Field(..., title="总条数")
-
-    class Config:
-        orm_mode = True
-        json_encoders = {
-            datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S"),
-        }
+class ApiEnterpList(PageModel[ApiEnterpType]):
+    pass
 
 
 class ApiEnterpCreate(BaseModel):

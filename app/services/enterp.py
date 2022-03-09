@@ -4,12 +4,8 @@ from typing import Union
 
 from app import crud
 from app.models import Enterp
-from app.schemas.models.enterp import (
-    EnterpCreate,
-    EnterpFilter,
-    EnterpModel,
-    EnterpUpdate,
-)
+from app.schemas.models.enterp import (EnterpCreate, EnterpFilter, EnterpModel,
+                                       EnterpUpdate)
 from app.schemas.models.user import UserModel
 
 from .base import BaseService
@@ -20,7 +16,6 @@ class EnterpService(BaseService):
         self.enterp = crud.Enterp(self.session, self.redis)
 
     async def get_enterp_list(self, model: EnterpFilter):
-        print(model)
         return await self.enterp.get_enterp_list(
             domain=model.domain,
             name=model.name,

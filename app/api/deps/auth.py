@@ -1,6 +1,5 @@
 from typing import Optional
 
-from app import models
 from app.core import security
 from app.core.config import settings
 from app.schemas.models.user import UserModel

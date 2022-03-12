@@ -18,7 +18,7 @@ class PageFilter:
 
 class PageModel(GenericModel, Generic[T]):
     total: int = Field(..., title="总数")
-    data: List[T] = Field(..., titlt="分页数据", alias="list")
+    data: List[T] = Field(..., titlt="分页数据")
 
     class Config:
         orm_mode = True

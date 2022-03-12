@@ -10,7 +10,7 @@ class EnterpFilter(BaseModel):
     domain: Optional[str] = ""
     name: Optional[str] = ""
     short_name: Optional[str] = ""
-    expire_at: List[date] = []
+    expire_at: Optional[List[date]] = None
     is_active: Optional[int] = None
 
     page: int

@@ -1,12 +1,10 @@
+from typing import Literal
+
 from app.api import deps
-from app.api.api_v1.deps.enterp import (
-    ApiEnterpCreate,
-    ApiEnterpFilter,
-    ApiEnterpList,
-    ApiEnterpType,
-    ApiEnterpUpdate,
-)
-from app.core.exceptions import ExistsError, NotFoundError
+from app.api.api_v1.deps.enterp import (ApiEnterpCreate, ApiEnterpFilter,
+                                        ApiEnterpList, ApiEnterpStatus,
+                                        ApiEnterpType, ApiEnterpUpdate)
+from app.core.exceptions import APIException, ExistsError, NotFoundError
 from app.schemas.models.enterp import EnterpCreate, EnterpFilter, EnterpUpdate
 from app.schemas.models.user import UserModel
 from app.services.enterp import EnterpService
@@ -80,6 +78,24 @@ async def update(
     return ins
 
 
+@router.put("/status/{enterp_id}", summary="修改企业状态", response_model=ApiEnterpType)
+async def update_status(
+    enterp_id: int,
+    obj_in: ApiEnterpStatus,
+    enterp_service: EnterpService = Depends(),
+    current: UserModel = Depends(deps.get_current_active_superuser),
+):
+    ins = await enterp_service.get_by_id(enterp_id)
+    if not ins:
+        raise NotFoundError()
+    ins = await enterp_service.update_status(
+        ins,
+        is_active=obj_in.is_active,
+        current=current,
+    )
+    return ins
+
+
 @router.delete("/{enterp_id}", summary="删除企业信息", response_model=ApiEnterpType)
 async def delete(
     enterp_id: int,
@@ -87,7 +103,7 @@ async def delete(
     current: UserModel = Depends(deps.get_current_active_superuser),
 ):
     ins = await enterp_service.get_by_id(enterp_id)
-    if not ins:
+    if not ins or ins.is_active != 2:
         raise NotFoundError()
     ins = await enterp_service.delete(ins, current=current)
     return ins

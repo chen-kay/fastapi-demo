@@ -2,7 +2,7 @@ import json
 from datetime import date
 from typing import List
 
-from app.models import Enterp
+from app.models import Enterp, User
 from app.schemas.models.enterp import EnterpModel
 from sqlalchemy.sql import or_
 

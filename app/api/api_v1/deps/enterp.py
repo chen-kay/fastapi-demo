@@ -11,7 +11,7 @@ from pydantic.main import BaseModel
 
 @dataclass
 class ApiEnterpFilter(PageFilter):
-    expire_at: List[date] = Query([], title="到期时间")
+    expire_at: Optional[List[date]] = Query(None, title="到期时间")
     domain: str = Query("", title="企业域名")
     name: str = Query("", title="企业名称")
     short_name: str = Query("", title="企业简称")
@@ -31,6 +31,7 @@ class ApiEnterpType(BaseModel):
     desc: str = Field(None, title="备注信息")
 
     expire_at: date = Field(None, title="企业过期时间")
+    is_active: int = Field(None, title="状态")
 
     alt_user: UserView = Field(None, title="操作人")
 
@@ -66,3 +67,7 @@ class ApiEnterpUpdate(BaseModel):
     desc: str = Field("", title="备注")
 
     expire_at: date = Field(None, title="过期时间")
+
+
+class ApiEnterpStatus(BaseModel):
+    is_active: int = Field(None, title="状态")

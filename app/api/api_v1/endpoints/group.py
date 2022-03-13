@@ -1,10 +1,6 @@
 from app.api import deps
-from app.api.api_v1.deps.group import (
-    ApiGroupCreate,
-    ApiGroupList,
-    ApiGroupType,
-    ApiGroupUpdate,
-)
+from app.api.api_v1.deps.group import (ApiGroupCreate, ApiGroupList,
+                                       ApiGroupType, ApiGroupUpdate)
 from app.core.exceptions import ExistsError, NotFoundError
 from app.schemas.models.group import GroupCreate, GroupUpdate
 from app.schemas.models.user import UserModel
@@ -19,9 +15,9 @@ async def get_list(
     group_service: GroupService = Depends(),
 ):
     """获取用户组列表"""
-    data, total = await group_service.get_group_list()
+    data, _ = await group_service.get_group_list()
     data = await group_service.get_tree_data(data)
-    return ApiGroupList(total=total, data=data)
+    return dict(data=data)
 
 
 @router.post("/", summary="新增用户组信息", response_model=ApiGroupType)

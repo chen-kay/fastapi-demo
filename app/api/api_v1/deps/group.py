@@ -27,13 +27,6 @@ class ApiGroupType(BaseModel):
 
 class ApiGroupList(BaseModel):
     data: List[ApiGroupType] = Field(..., title="用户组数据")
-    total: int = Field(..., title="总条数")
-
-    class Config:
-        orm_mode = True
-        json_encoders = {
-            datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S"),
-        }
 
 
 class ApiGroupCreate(BaseModel):
@@ -42,11 +35,11 @@ class ApiGroupCreate(BaseModel):
     name: str = Field(..., title="用户组名")
     desc: str = Field(None, title="备注")
 
-    visible: int = Field(..., title="可见范围")
+    visible: int = Field(1, title="可见范围")
 
 
 class ApiGroupUpdate(BaseModel):
     name: str = Field(..., title="用户组名")
     desc: str = Field(None, title="备注")
 
-    visible: int = Field(..., title="可见范围")
+    visible: int = Field(None, title="可见范围")

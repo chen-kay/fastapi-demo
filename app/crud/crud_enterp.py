@@ -1,8 +1,8 @@
 import json
 from datetime import date
-from typing import List
+from typing import List, Union
 
-from app.models import Enterp, User
+from app.models import Enterp
 from app.schemas.models.enterp import EnterpModel
 from sqlalchemy.sql import or_
 
@@ -90,3 +90,7 @@ class EnterpCrud(BaseCrud[Enterp]):
             return
         self.redis.delete(f"enterp:id:{ins.id}")
         self.redis.delete(f"enterp:domain:{ins.domain}")
+
+    async def is_active(self, ins: Union[Enterp, EnterpModel]) -> bool:
+        """是否可用"""
+        return ins.is_active

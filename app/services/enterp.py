@@ -1,12 +1,11 @@
 """Enterp Services module."""
 
 from datetime import datetime
-from typing import Literal, Union
+from typing import Literal
 
 from app import crud
 from app.models import Enterp
-from app.schemas.models.enterp import (EnterpCreate, EnterpFilter, EnterpModel,
-                                       EnterpUpdate)
+from app.schemas.models.enterp import EnterpCreate, EnterpUpdate
 from app.schemas.models.user import UserModel
 
 from .base import BaseService
@@ -15,18 +14,6 @@ from .base import BaseService
 class EnterpService(BaseService):
     def initializer(self):
         self.enterp = crud.Enterp(self.session, self.redis)
-
-    async def get_enterp_list(self, model: EnterpFilter):
-        return await self.enterp.get_enterp_list(
-            domain=model.domain,
-            name=model.name,
-            short_name=model.short_name,
-            expire_at=model.expire_at,
-            is_active=model.is_active,
-            keyword=model.keyword,
-            page=model.page,
-            page_size=model.page_size,
-        )
 
     async def create(self, *, model: EnterpCreate, current: UserModel):
         """创建企业"""
@@ -81,19 +68,3 @@ class EnterpService(BaseService):
         await self.enterp.clear_cache(ins)
         # Todo. 企业删除后操作
         return ins
-
-    async def get_by_domain(self, domain: str):
-        return await self.enterp.get_by_domain(domain)
-
-    async def get_by_id(self, id: int):
-        return await self.enterp.get_by_id(id)
-
-    async def find_by_domain(self, domain: str):
-        return await self.enterp.find_by_domain(domain)
-
-    async def find_by_id(self, id: int):
-        return await self.enterp.find_by_id(id)
-
-    async def is_active(self, user: Union[Enterp, EnterpModel]) -> bool:
-        """是否可用"""
-        return user.is_active

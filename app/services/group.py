@@ -1,6 +1,6 @@
 """Group Services module."""
 
-from typing import List
+from typing import List, Optional
 
 from app import crud
 from app.models import Group
@@ -13,6 +13,14 @@ from .base import BaseService
 class GroupService(BaseService):
     def initializer(self):
         self.group = crud.Group(self.session, self.redis)
+
+    async def get_data(self):
+        data, _ = await self.group.get_group_list()
+        return await self.get_tree_data(data)
+
+    async def get_cascader(self):
+        data, _ = await self.group.get_group_list()
+        return await self.get_tree_data(data)
 
     async def get_group_list(self):
         return await self.group.get_group_list()
@@ -46,18 +54,15 @@ class GroupService(BaseService):
         ins = await self.group.delete(ins, model=update_data)
         return ins
 
-    async def get_by_id(self, id: int):
-        return await self.group.get_by_id(id)
-
-    async def get_by_name(self, name: str, pid_id: int = None):
-        return await self.group.get_by_name(name, pid_id=pid_id)
-
-    async def get_tree_data(self, data: List[Group], pid_id=0):
-        res = []
+    async def get_tree_data(
+        self, data: List[Group], pid_id: int = None, path: List[int] = []
+    ):
+        res: List[Group] = []
         for item in data:
             if item.pid_id != pid_id:
                 continue
-            chil = await self.get_tree_data(data, pid_id=item.id)
+            item.path = path
+            chil = await self.get_tree_data(data, pid_id=item.id, path=path + [item.id])
             if chil:
                 item.children = chil
             res.append(item)

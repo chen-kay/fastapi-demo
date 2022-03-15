@@ -1,6 +1,13 @@
+from typing import List
+
 from app.api import deps
-from app.api.api_v1.deps.group import (ApiGroupCreate, ApiGroupList,
-                                       ApiGroupType, ApiGroupUpdate)
+from app.api.api_v1.deps.group import (
+    ApiGroupCascader,
+    ApiGroupCreate,
+    ApiGroupList,
+    ApiGroupType,
+    ApiGroupUpdate,
+)
 from app.core.exceptions import ExistsError, NotFoundError
 from app.schemas.models.group import GroupCreate, GroupUpdate
 from app.schemas.models.user import UserModel
@@ -15,8 +22,7 @@ async def get_list(
     group_service: GroupService = Depends(),
 ):
     """获取用户组列表"""
-    data, _ = await group_service.get_group_list()
-    data = await group_service.get_tree_data(data)
+    data = await group_service.get_data()
     return dict(data=data)
 
 
@@ -27,24 +33,23 @@ async def create(
     current: UserModel = Depends(deps.get_current_active_user),
 ):
     """新增用户组信息"""
-    ins = await group_service.get_by_name(obj_in.name, pid_id=obj_in.pid_id)
-    if ins:
+    exists = await group_service.group.get_by_name(obj_in.name, pid_id=obj_in.pid_id)
+    if exists:
         raise ExistsError(f"用户组: {obj_in.name} 已存在.")
-
     model = GroupCreate(
-        **obj_in.dict(exclude_unset=True),
+        **obj_in.dict(exclude_none=True),
     )
     ins = await group_service.create(model=model, current=current)
     return ins
 
 
-@router.get("/{group_id}", summary="获取用户组信息", response_model=ApiGroupType)
+@router.get("/{group_id:int}", summary="获取用户组信息", response_model=ApiGroupType)
 async def retrieve(
     group_id: int,
     group_service: GroupService = Depends(),
 ):
     """获取用户组信息"""
-    ins = await group_service.get_by_id(group_id)
+    ins = await group_service.group.get_by_id(group_id)
     return ins
 
 
@@ -55,7 +60,14 @@ async def update(
     group_service: GroupService = Depends(),
     current: UserModel = Depends(deps.get_current_active_user),
 ):
-    ins = await group_service.get_by_id(group_id)
+    exists = await group_service.group.get_name_exist(
+        obj_in.name,
+        pid_id=obj_in.pid_id,
+        group_id=group_id,
+    )
+    if exists:
+        raise ExistsError(f"用户组: {obj_in.name} 已存在.")
+    ins = await group_service.group.get_by_id(group_id)
     model = GroupUpdate(
         **obj_in.dict(exclude_unset=True),
     )
@@ -63,14 +75,21 @@ async def update(
     return ins
 
 
-@router.delete("/{group_id}", summary="删除用户组信息", response_model=ApiGroupType)
+@router.delete("/{group_id:int}", summary="删除用户组信息", response_model=ApiGroupType)
 async def delete(
     group_id: int,
     group_service: GroupService = Depends(),
     current: UserModel = Depends(deps.get_current_active_user),
 ):
-    ins = await group_service.get_by_id(group_id)
+    ins = await group_service.group.get_by_id(group_id)
     if not ins:
         raise NotFoundError()
     ins = await group_service.delete(ins, current=current)
     return ins
+
+
+@router.get("/cascader", summary="获取用户组级联", response_model=List[ApiGroupCascader])
+async def cascader(group_service: GroupService = Depends()):
+    """获取用户组级联"""
+    data = await group_service.get_cascader()
+    return data

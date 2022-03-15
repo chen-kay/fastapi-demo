@@ -23,14 +23,16 @@ class GroupCreate(BaseModel):
     name: str = ""
     desc: str = ""
 
-    visible: int
+    visible: int = 1
 
 
 class GroupUpdate(BaseModel):
+    pid_id: Optional[int] = None
+
     name: str = ""
     desc: str = ""
 
-    visible: int
+    visible: int = 1
 
 
 class GroupView(BaseModel):

@@ -1,13 +1,13 @@
-"""Menu Model."""
+"""Access Model."""
 
 from app.db.base_class import Base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from .relationship import GroupsAuthoritys
+from .relationship import GroupsAccess
 
 
-class Authority(Base):
+class Access(Base):
     """权限"""
 
     pid_id = Column(Integer, index=True)
@@ -21,8 +21,10 @@ class Authority(Base):
 
     is_active = Column(Integer, default=1, server_default="1", comment="状态 1.正常 2.禁用")
 
+    is_super = Column(Integer, default=0, server_default="0", comment="超级权限")
+
     groups = relationship(
-        "Group", secondary=GroupsAuthoritys, back_populates="authoritys", lazy="dynamic"
+        "Group", secondary=GroupsAccess, back_populates="access", lazy="dynamic"
     )
 
     __table_args__ = {

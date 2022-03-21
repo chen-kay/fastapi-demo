@@ -3,8 +3,8 @@
 from app.db.base_class import Base
 from sqlalchemy import Column, ForeignKey, Integer, Table
 
-GroupsAuthoritys = Table(
-    "groups_authoritys",
+GroupsAccess = Table(
+    "groups_access",
     Base.metadata,
     Column(
         "group_id",
@@ -13,9 +13,9 @@ GroupsAuthoritys = Table(
         primary_key=True,
     ),
     Column(
-        "authority_id",
+        "access_id",
         Integer,
-        ForeignKey("authority.id", onupdate="CASCADE", ondelete="CASCADE"),
+        ForeignKey("access.id", onupdate="CASCADE", ondelete="CASCADE"),
         primary_key=True,
     ),
 )

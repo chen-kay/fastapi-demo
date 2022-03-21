@@ -9,7 +9,7 @@ class CurrentType(BaseModel):
     username: str
     fullname: str = ""
 
-    authoritys: List[str] = []
+    access: List[str] = []
 
     user_name: str
 

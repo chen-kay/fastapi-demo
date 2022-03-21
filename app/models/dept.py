@@ -1,14 +1,14 @@
-"""Group Model."""
+"""Dept Model."""
 
 from app.db.base_class import Base
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from .relationship import GroupsAccess, UsersGroups
+from .relationship import UsersGroups
 
 
-class Group(Base):
-    """用户组"""
+class Dept(Base):
+    """部门"""
 
     enterp_id = Column(Integer, ForeignKey("enterp.id"))
     enterp = relationship("Enterp", foreign_keys=[enterp_id])
@@ -35,9 +35,6 @@ class Group(Base):
     alt_user = relationship("User", foreign_keys=[alt_user_id])
     del_user_id = Column(Integer, index=True)
 
-    access = relationship(
-        "Access", secondary=GroupsAccess, back_populates="groups", lazy="dynamic"
-    )
     users = relationship(
         "User", secondary=UsersGroups, back_populates="groups", lazy="dynamic"
     )

@@ -15,7 +15,7 @@ async def read_user_current(
     current_user: UserModel = Depends(deps.get_current_active_user),
 ) -> Any:
     model = CurrentType(**current_user.dict())
-    model.authoritys = []
+    model.access = []
     return model
 
 

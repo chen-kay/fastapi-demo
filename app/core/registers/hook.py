@@ -1,5 +1,4 @@
-"""注册请求拦截
-"""
+"""注册请求拦截"""
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 

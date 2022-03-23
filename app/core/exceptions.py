@@ -1,5 +1,4 @@
-"""自定义异常
-"""
+"""自定义异常"""
 from fastapi import status
 
 
@@ -41,4 +40,4 @@ class NotFoundError(APIException):
 
 
 class ExistsError(APIException):
-    default_detail = ""
+    default_detail = "对象已存在."

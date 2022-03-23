@@ -1,5 +1,4 @@
-"""连接初始化
-"""
+"""连接初始化"""
 from typing import Optional
 
 from aioredis import Redis

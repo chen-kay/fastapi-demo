@@ -1,5 +1,4 @@
-"""注册路由
-"""
+"""注册路由"""
 from app.api.api_v1 import api
 from fastapi import FastAPI
 

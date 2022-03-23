@@ -1,47 +1,52 @@
 """User Model."""
-
 from app.db.base_class import Base
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-
-from .relationship import UsersGroups
 
 
 class User(Base):
     """用户"""
 
-    enterp_id = Column(Integer, ForeignKey("enterp.id"), index=True)
-    enterp = relationship("Enterp", foreign_keys=[enterp_id])
+    company_id = Column(Integer, ForeignKey("company.id"))
+    company = relationship("Company", foreign_keys=[company_id])
+    org_id = Column(Integer, ForeignKey("org.id"))
+    org = relationship("Org", foreign_keys=[org_id])
 
-    user_name = Column(String, unique=True, index=True, comment="唯一标识")
+    username = Column(String, comment="账号", index=True)
+    fullname = Column(String, comment="姓名")
 
-    username = Column(String, index=True, comment="账号")
-    fullname = Column(String, comment="用户名")
+    nickname = Column(String, comment="昵称")
 
-    hashed_password = Column(String, nullable=False, comment="密码")
+    hashed_password = Column(String, comment="密码")
 
-    is_active = Column(Integer, default=1, server_default="1", comment="状态 1.正常 2.禁用")
-    is_admin = Column(Integer, default=0, server_default="0", comment="管理员 1.是 0.否")
+    birth = Column(Date, comment="生日")
+    sex = Column(Integer, comment="性别 0.无 1.男 2.女", default=0, server_default="0")
+
+    email = Column(String, comment="邮箱")
+    mobile = Column(String, comment="手机号")
+
+    status = Column(Integer, comment="状态 1.正常 2.禁用", default=1, server_default="1")
+    is_admin = Column(Integer, comment="管理员 1.是 0.否", default=0, server_default="0")
     is_superuser = Column(
         Integer,
+        comment="系统管理员 1.是 0.否",
         default=0,
         server_default="0",
-        comment="系统管理员 1.是 0.否",
     )
 
-    add_user_id = Column(Integer, ForeignKey("user.id"))
-    add_user = relationship("User", foreign_keys=[add_user_id])
-    alt_user_id = Column(Integer, ForeignKey("user.id"))
-    alt_user = relationship("User", foreign_keys=[alt_user_id])
-    del_user_id = Column(Integer, index=True)
+    __table__args__ = {
+        "comment": "用户",
+    }
 
-    groups = relationship(
-        "Group",
-        secondary=UsersGroups,
-        back_populates="users",
-        lazy="dynamic",
-    )
 
-    __table_args__ = {
-        "comment": "用户表",
+class UserRole(Base):
+    """用户角色"""
+
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user = relationship("User", foreign_keys=[user_id])
+    role_id = Column(Integer, ForeignKey("role.id"))
+    role = relationship("Role", foreign_keys=[role_id])
+
+    __table__args__ = {
+        "comment": "用户角色",
     }

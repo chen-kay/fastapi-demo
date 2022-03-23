@@ -1,5 +1,4 @@
-"""注册捕获全局异常
-"""
+"""注册捕获全局异常"""
 import traceback
 
 from app.core import exceptions

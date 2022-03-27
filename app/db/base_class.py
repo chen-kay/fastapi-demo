@@ -1,8 +1,5 @@
-from datetime import datetime
-
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, Integer
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.sql import func
 
 
 @as_declarative()
@@ -16,35 +13,6 @@ class Base:
         server_default="0",
         comment="逻辑删除:0=未删除,1=删除",
     )
-    add_at = Column(
-        DateTime,
-        default=datetime.now,
-        server_default=func.now(),
-        comment="创建时间",
-    )
-    alt_at = Column(
-        DateTime,
-        default=datetime.now,
-        onupdate=datetime.now,
-        server_default=func.now(),
-        server_onupdate=func.now(),
-        comment="更新时间",
-    )
-    add_user = Column(
-        String,
-        comment="创建人",
-        default="",
-        server_default="",
-        index=True,
-    )
-    alt_user = Column(
-        String,
-        comment="修改人",
-        default="",
-        server_default="",
-        index=True,
-    )
-
     __name__: str
 
     # Generate __tablename__ automatically

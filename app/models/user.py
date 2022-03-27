@@ -7,6 +7,8 @@ from sqlalchemy.orm import relationship
 class User(Base):
     """用户"""
 
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+
     company_id = Column(Integer, ForeignKey("company.id"))
     company = relationship("Company", foreign_keys=[company_id])
     org_id = Column(Integer, ForeignKey("org.id"))
@@ -32,6 +34,13 @@ class User(Base):
         comment="系统管理员 1.是 0.否",
         default=0,
         server_default="0",
+    )
+
+    is_del = Column(
+        Integer,
+        default=0,
+        server_default="0",
+        comment="逻辑删除:0=未删除,1=删除",
     )
 
     __table__args__ = {

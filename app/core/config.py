@@ -21,15 +21,21 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     # 生成token的加密算法
     ALGORITHM: str = "HS256"
-    SECRET_KEY: str = (
-        "oa7iYpGp3BvGmwKYondTU2U-IN0njhW0aXGbqyYmflQ"  # secrets.token_urlsafe(32)
-    )
+    # secrets.token_urlsafe(32)
+    SECRET_KEY: str = "oa7iYpGp3BvGmwKYondTU2U-IN0njhW0aXGbqyYmflQ"
 
     # 项目根路径
     BASE_PATH: Path = Path(__file__).resolve().parent.parent.parent
 
     DEFAULT_PAGE_SIZE: int = 100
 
+    # 默认管理员账号密码等信息
+    ADMIN_USERNAME: str = "admin"
+    ADMIN_PASSWORD: str = "123456"
+    ADMIN_NICKNAME: str = "admin"
+    ADMIN_EMAIL: str = "l1328076914@gmail.com"
+
+    DATABASE_NAME: str = "fastapi_demo"
     # mysql+pymysql://{user}:{password}@{host}:{port}/{database}?charset=utf8
     SQLALCHEMY_DATABASE_URL: Optional[str] = SQLITE_DATABASE_URL
     # redis://:{password}@{host}:{port}/{db}?charset=utf8

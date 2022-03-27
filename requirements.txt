@@ -8,6 +8,7 @@ python-multipart
 
 aioredis # redis
 sqlalchemy
+sqlalchemy_utils
 loguru
 
 # sqlalchemy migrate

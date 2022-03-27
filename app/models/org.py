@@ -1,16 +1,13 @@
 """Org Model."""
 from app.db.base_class import Base
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String
 
 
 class Org(Base):
     """组织"""
 
-    company_id = Column(Integer, ForeignKey("company.id"))
-    company = relationship("Company", foreign_keys=[company_id])
-    parent_id = Column(Integer, ForeignKey("parent.id"))
-    parent = relationship("Org", foreign_keys=[parent_id])
+    company_id = Column(Integer, comment="企业id", index=True)
+    parent_id = Column(Integer, comment="上级id", index=True)
 
     code = Column(String, comment="唯一编码", index=True)
     name = Column(String, comment="组织名称")

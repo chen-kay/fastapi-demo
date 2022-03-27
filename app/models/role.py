@@ -1,14 +1,12 @@
 """Role Model."""
 from app.db.base_class import Base
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String
 
 
 class Role(Base):
     """角色"""
 
-    company_id = Column(Integer, ForeignKey("company.id"))
-    company = relationship("Company", foreign_keys=[company_id])
+    company_id = Column(Integer, comment="企业id", index=True)
 
     code = Column(String, comment="唯一编码", index=True)
     name = Column(String, comment="企业名称")
@@ -33,10 +31,8 @@ class Role(Base):
 class RoleAccess(Base):
     """角色权限"""
 
-    role_id = Column(Integer, ForeignKey("role.id"))
-    role = relationship("Role", foreign_keys=[role_id])
-
-    access = Column(String, comment="权限")
+    role_id = Column(Integer, comment="角色id", index=True)
+    access_id = Column(Integer, comment="权限id", index=True)
 
     __table__args__ = {
         "comment": "角色权限",
@@ -46,10 +42,8 @@ class RoleAccess(Base):
 class RoleDataScope(Base):
     """角色数据范围"""
 
-    role_id = Column(Integer, ForeignKey("role.id"))
-    role = relationship("Role", foreign_keys=[role_id])
-    org_id = Column(Integer, ForeignKey("org.id"))
-    org = relationship("Org", foreign_keys=[org_id])
+    role_id = Column(Integer, comment="角色id", index=True)
+    org_id = Column(Integer, comment="组织id", index=True)
 
     __table__args__ = {
         "comment": "角色数据范围",

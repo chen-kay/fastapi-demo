@@ -10,6 +10,7 @@ def register_hook(app: FastAPI) -> None:
     :param app:
     :return:
     """
+
     @app.middleware("http")
     async def logger_request(request: Request, call_next) -> Response:
         # https://stackoverflow.com/questions/60098005/fastapi-starlette-get-client-real-ip

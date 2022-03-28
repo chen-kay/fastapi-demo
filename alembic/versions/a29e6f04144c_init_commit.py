@@ -1,8 +1,8 @@
 """init commit
 
-Revision ID: 9646352508e8
+Revision ID: a29e6f04144c
 Revises: 
-Create Date: 2022-03-27 22:26:09.869307
+Create Date: 2022-03-29 00:19:55.347190
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9646352508e8'
+revision = 'a29e6f04144c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,7 +33,7 @@ def upgrade():
     )
     op.create_index(op.f('ix_company_code'), 'company', ['code'], unique=True)
     op.create_index(op.f('ix_company_id'), 'company', ['id'], unique=False)
-    op.create_table('dict_value',
+    op.create_table('dict_data',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('is_del', sa.Integer(), server_default='0', nullable=True, comment='逻辑删除:0=未删除,1=删除'),
     sa.Column('company_id', sa.Integer(), nullable=True, comment='企业id'),
@@ -44,11 +44,11 @@ def upgrade():
     sa.Column('remark', sa.String(), nullable=True, comment='备注'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_dict_value_code'), 'dict_value', ['code'], unique=False)
-    op.create_index(op.f('ix_dict_value_company_id'), 'dict_value', ['company_id'], unique=False)
-    op.create_index(op.f('ix_dict_value_id'), 'dict_value', ['id'], unique=False)
-    op.create_index(op.f('ix_dict_value_parent_id'), 'dict_value', ['parent_id'], unique=False)
-    op.create_table('dictionary',
+    op.create_index(op.f('ix_dict_data_code'), 'dict_data', ['code'], unique=False)
+    op.create_index(op.f('ix_dict_data_company_id'), 'dict_data', ['company_id'], unique=False)
+    op.create_index(op.f('ix_dict_data_id'), 'dict_data', ['id'], unique=False)
+    op.create_index(op.f('ix_dict_data_parent_id'), 'dict_data', ['parent_id'], unique=False)
+    op.create_table('dict_type',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('is_del', sa.Integer(), server_default='0', nullable=True, comment='逻辑删除:0=未删除,1=删除'),
     sa.Column('code', sa.String(), nullable=True, comment='唯一编码'),
@@ -58,8 +58,8 @@ def upgrade():
     sa.Column('status', sa.Integer(), server_default='1', nullable=True, comment='状态 1.正常 2.禁用'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_dictionary_code'), 'dictionary', ['code'], unique=False)
-    op.create_index(op.f('ix_dictionary_id'), 'dictionary', ['id'], unique=False)
+    op.create_index(op.f('ix_dict_type_code'), 'dict_type', ['code'], unique=False)
+    op.create_index(op.f('ix_dict_type_id'), 'dict_type', ['id'], unique=False)
     op.create_table('operate_log',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('is_del', sa.Integer(), server_default='0', nullable=True, comment='逻辑删除:0=未删除,1=删除'),
@@ -231,14 +231,14 @@ def downgrade():
     op.drop_index(op.f('ix_operate_log_id'), table_name='operate_log')
     op.drop_index(op.f('ix_operate_log_account'), table_name='operate_log')
     op.drop_table('operate_log')
-    op.drop_index(op.f('ix_dictionary_id'), table_name='dictionary')
-    op.drop_index(op.f('ix_dictionary_code'), table_name='dictionary')
-    op.drop_table('dictionary')
-    op.drop_index(op.f('ix_dict_value_parent_id'), table_name='dict_value')
-    op.drop_index(op.f('ix_dict_value_id'), table_name='dict_value')
-    op.drop_index(op.f('ix_dict_value_company_id'), table_name='dict_value')
-    op.drop_index(op.f('ix_dict_value_code'), table_name='dict_value')
-    op.drop_table('dict_value')
+    op.drop_index(op.f('ix_dict_type_id'), table_name='dict_type')
+    op.drop_index(op.f('ix_dict_type_code'), table_name='dict_type')
+    op.drop_table('dict_type')
+    op.drop_index(op.f('ix_dict_data_parent_id'), table_name='dict_data')
+    op.drop_index(op.f('ix_dict_data_id'), table_name='dict_data')
+    op.drop_index(op.f('ix_dict_data_company_id'), table_name='dict_data')
+    op.drop_index(op.f('ix_dict_data_code'), table_name='dict_data')
+    op.drop_table('dict_data')
     op.drop_index(op.f('ix_company_id'), table_name='company')
     op.drop_index(op.f('ix_company_code'), table_name='company')
     op.drop_table('company')

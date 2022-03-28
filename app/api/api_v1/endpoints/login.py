@@ -21,10 +21,11 @@ async def login(
     )
     if not user or not user_service.is_active(user):
         raise APIException("用户名密码错误")
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = security.create_access_token(
-        user.id, expires_delta=access_token_expires
-    )
+
+    access_token = security.create_access_token(user.id)
+    # todo
+    # 登录成功 记录登录日志
+    # 是否限制单用户登录
     return dict(
         access_token=access_token,
         token_type="Bearer",
@@ -33,4 +34,7 @@ async def login(
 
 @router.post("/logout", summary="退出登录", response_model=schemas.Msg)
 async def logout():
+    # todo
+    # 清除登录会话
+    # 创建退出登录日志
     return dict(msg="操作成功")

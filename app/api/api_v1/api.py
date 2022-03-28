@@ -1,5 +1,5 @@
 from app.api import auth
-from app.api.api_v1.endpoints import login, sysDict
+from app.api.api_v1.endpoints import login, sysDictData, sysDictType
 
 # from app.api.api_v1.endpoints import current, enterp, group, login
 from fastapi import APIRouter, Depends
@@ -7,8 +7,13 @@ from fastapi import APIRouter, Depends
 api_router = APIRouter()
 api_router.include_router(login.router, tags=["login"])
 api_router.include_router(
-    sysDict.router,
-    tags=["sysDict"],
+    sysDictType.router,
+    tags=["sysDictType"],
+    dependencies=[Depends(auth.get_current_active_user)],
+)
+api_router.include_router(
+    sysDictData.router,
+    tags=["sysDictData"],
     dependencies=[Depends(auth.get_current_active_user)],
 )
 # api_router.include_router(

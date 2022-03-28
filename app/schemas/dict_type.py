@@ -1,8 +1,8 @@
-"""Schemas Dictionary Model."""
+"""Schemas DictType Model."""
 from pydantic import BaseModel
 
 
-class DictType(BaseModel):
+class DictTypeType(BaseModel):
     id: int
 
     code: str

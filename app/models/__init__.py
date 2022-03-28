@@ -1,5 +1,6 @@
 from .company import Company
-from .dictionary import Dictionary, DictValue
+from .dict_data import DictData
+from .dict_type import DictType
 from .log import OperateLog, VisitLog
 from .org import Org
 from .role import Role, RoleAccess, RoleDataScope

@@ -1,9 +1,12 @@
-from typing import Any, Dict, Generic, Optional, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Type, TypeVar
 
 from aioredis import Redis
 from app.db.base import Base
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+
+if TYPE_CHECKING:
+    from app.services.base import BaseService
 
 ModelType = TypeVar("ModelType", bound=Base)
 
@@ -11,9 +14,16 @@ ModelType = TypeVar("ModelType", bound=Base)
 class BaseCrud(Generic[ModelType]):
     model: Type[ModelType]
 
-    def __init__(self, session: Session, redis: Optional[Redis] = None):
-        self.session = session
-        self.redis = redis
+    def __init__(self, service: BaseService):
+        self._service = service
+
+    @property
+    def session(self) -> Session:
+        return self._service.session
+
+    @property
+    def redis(self) -> Redis:
+        return self._service.redis
 
     async def get_by_id(self, id: int) -> Optional[ModelType]:
         ins = (

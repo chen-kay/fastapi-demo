@@ -2,13 +2,27 @@ import json
 from typing import Optional, Union
 
 from app import schemas
-from app.core.security import verify_password
-from app.models import User
+from app.core.security import get_password_hash, verify_password
+from app.models import Company, User
 
 from .base import BaseService
 
 
-class UserService(BaseService):
+class UserService(BaseService["User"]):
+    model: User = User
+
+    async def create_admin_user(self, ins: Company):
+        model = dict(
+            company_id=ins.id,
+            username="admin",
+            fullname="admin",
+            nickname="系统管理员",
+            hashed_password=get_password_hash("123456"),
+            is_admin=1,
+        )
+        ins = await self.create(model)
+        return ins
+
     async def get_by_id(self, id: int) -> Optional[User]:
         """从数据库获取用户 - 用户id"""
         qs = self.session.query(User).filter(

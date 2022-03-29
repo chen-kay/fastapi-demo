@@ -2,10 +2,10 @@ from typing import List, Optional
 
 from app.models import DictType
 
-from .base import BaseService
+from .base import BaseCrud
 
 
-class DictTypeService(BaseService["DictType"]):
+class CrudDictType(BaseCrud["DictType"]):
     model: DictType = DictType
 
     async def get_list(self) -> List[DictType]:

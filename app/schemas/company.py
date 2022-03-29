@@ -1,13 +1,11 @@
 """Schemas Company Model."""
-
-from datetime import datetime
+from datetime import date
 
 from pydantic import BaseModel
 
 
 class CompanyModel(BaseModel):
     id: int
-    domain: str
 
     code: str = ""
     name: str = ""
@@ -19,7 +17,56 @@ class CompanyModel(BaseModel):
     remark: str = ""
 
     status: int
-    expire_at: datetime = None
+    expire_at: date = None
+
+    class Config:
+        orm_mode = True
+
+
+class CompanyType(BaseModel):
+    id: int
+
+    code: str
+    name: str
+
+    short_name: str = ""
+    website: str = ""
+
+    sort: int
+    remark: str
+
+    status: int
+    expire_at: date = None
+
+    class Config:
+        orm_mode = True
+
+
+class CompanyAdd(BaseModel):
+    code: str
+    name: str
+
+    short_name: str = ""
+    website: str = ""
+
+    sort: int
+    remark: str
+
+    status: int
+    expire_at: date = None
+
+    class Config:
+        orm_mode = True
+
+
+class CompanyEdit(BaseModel):
+    name: str
+
+    short_name: str = ""
+    website: str = ""
+
+    sort: int
+    remark: str
 
     class Config:
         orm_mode = True

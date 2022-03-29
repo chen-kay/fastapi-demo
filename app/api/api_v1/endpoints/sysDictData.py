@@ -8,7 +8,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/data/",
+    "/",
     summary="获取字典值列表",
     response_model=schemas.Pageination[schemas.DictDataType],
 )
@@ -36,7 +36,7 @@ async def list(
 
 
 @router.post(
-    "/data/add",
+    "/add",
     summary="新增字典值",
     response_model=schemas.Msg,
 )
@@ -61,7 +61,7 @@ async def add(
 
 
 @router.put(
-    "/data/edit/<int:pk>",
+    "/edit/<int:pk>",
     summary="修改字典值",
     response_model=schemas.Msg,
 )
@@ -83,7 +83,7 @@ async def edit(
 
 
 @router.delete(
-    "/data/delete/<int:pk>",
+    "/delete/<int:pk>",
     summary="删除字典值",
     response_model=schemas.Msg,
 )

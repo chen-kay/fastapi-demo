@@ -1,13 +1,13 @@
 import json
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from app import schemas
 from app.models import Company
 
-from .base import BaseService
+from .base import BaseCrud
 
 
-class CompanyService(BaseService["Company"]):
+class CrudCompany(BaseCrud["Company"]):
     model = Company
 
     async def get_list(
@@ -27,27 +27,6 @@ class CompanyService(BaseService["Company"]):
         qs = qs.offset((page - 1) * limit).limit(limit)
         return qs.all(), total
 
-    async def add(self, model: schemas.CompanyAdd):
-        """新增企业"""
-        data = model.dict(exclude_unset=True)
-        ins = await self.create(data)
-        return ins
-
-    async def edit(self, ins: Company, *, model: schemas.CompanyEdit):
-        """修改企业"""
-        data = model.dict(exclude_unset=True)
-        ins = await self.update(ins, model=data)
-        return ins
-
-    async def get_by_id(self, id: int) -> Optional[Company]:
-        """从数据库获取企业 - 企业id"""
-        qs = self.session.query(Company).filter(
-            Company.is_del == 0,
-            Company.id == id,
-        )
-        ins = qs.first()
-        return ins
-
     async def find_by_id(self, id: int) -> schemas.CompanyModel:
         """从缓存获取企业 - 企业id"""
         key = f"enterp:id:{id}"
@@ -62,10 +41,6 @@ class CompanyService(BaseService["Company"]):
                 key, json.dumps(model.dict(), ensure_ascii=False)
             )
         return model
-
-    def is_active(self, ins: Company) -> bool:
-        """企业是否可用"""
-        return ins.is_del == 0 and ins.status == 1
 
     async def check_code_exists(self, code: str, *, ins: Company = None):
         """验证编码是否存在"""

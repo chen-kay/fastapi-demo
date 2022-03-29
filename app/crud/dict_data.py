@@ -3,10 +3,10 @@ from typing import List, Optional, Tuple
 from app import schemas
 from app.models import DictData
 
-from .base import BaseService
+from .base import BaseCrud
 
 
-class DictDataService(BaseService["DictData"]):
+class CrudDictData(BaseCrud["DictData"]):
     model: DictData = DictData
 
     async def get_list(

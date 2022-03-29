@@ -33,8 +33,8 @@ class BaseService(Generic[ModelType]):
         ins = self.model(**model)
 
         self.session.add(ins)
-        self.session.commit()
-        self.session.refresh(ins)
+        self.session.flush()
+        print(ins)
         return ins
 
     async def update(
@@ -50,8 +50,7 @@ class BaseService(Generic[ModelType]):
             if field in update_data:
                 setattr(ins, field, update_data[field])
         self.session.add(ins)
-        self.session.commit()
-        self.session.refresh(ins)
+        self.session.flush()
         return ins
 
     async def delete(
@@ -67,5 +66,8 @@ class BaseService(Generic[ModelType]):
 
         ins.is_del = 1
         self.session.add(ins)
-        self.session.commit()
+        self.session.flush()
         return ins
+
+    def __del__(self):
+        self.session.commit()

@@ -57,7 +57,7 @@ async def edit(
     ins = await company_service.get_by_id(pk)
     if not ins:
         raise exceptions.NotFoundError()
-    if await company_service.check_name_exists(model.name):
+    if await company_service.check_name_exists(model.name, ins=ins):
         raise exceptions.ExistsError()
 
     await company_service.edit(ins, model=model)

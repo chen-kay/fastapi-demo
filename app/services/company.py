@@ -67,10 +67,10 @@ class CompanyService(BaseService["Company"]):
         """企业是否可用"""
         return ins.is_del == 0 and ins.status == 1
 
-    async def check_code_exists(self, code: str, *, ins: Company = None):
+    async def check_domain_exists(self, domain: str, *, ins: Company = None):
         """验证编码是否存在"""
         qs = self.session.query(Company).filter(
-            Company.code == code, Company.is_del == 0
+            Company.domain == domain, Company.is_del == 0
         )
         if ins:
             qs = qs.filter(Company.id != ins.id)

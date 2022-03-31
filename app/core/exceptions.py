@@ -35,6 +35,10 @@ class PermissionDenied(APIException):
     default_detail = "您无权执行此操作."
 
 
+class ValidateError(APIException):
+    default_detail = "数据验证失败"
+
+
 class NotFoundError(APIException):
     default_detail = "您所操作的对象已不存在."
 

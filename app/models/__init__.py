@@ -1,3 +1,4 @@
+from .access import Access
 from .company import Company
 from .dict_data import DictData
 from .dict_type import DictType

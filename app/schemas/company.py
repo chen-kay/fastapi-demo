@@ -7,7 +7,7 @@ from pydantic import BaseModel
 class CompanyModel(BaseModel):
     id: int
 
-    code: str = ""
+    domain: str = ""
     name: str = ""
 
     short_name: str = ""
@@ -26,7 +26,7 @@ class CompanyModel(BaseModel):
 class CompanyType(BaseModel):
     id: int
 
-    code: str
+    domain: str
     name: str
 
     short_name: str = ""
@@ -43,7 +43,7 @@ class CompanyType(BaseModel):
 
 
 class CompanyAdd(BaseModel):
-    code: str
+    domain: str
     name: str
 
     short_name: str = ""

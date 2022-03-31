@@ -9,7 +9,7 @@ class Company(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
-    code = Column(String, comment="唯一编码", index=True, unique=True)
+    domain = Column(String, comment="域名", index=True, unique=True)
     name = Column(String, comment="企业名称")
 
     short_name = Column(String, comment="简称")

@@ -13,8 +13,8 @@ class CompanyService(BaseService["Company"]):
     async def get_list(
         self,
         *,
-        page: int,
-        limit: int,
+        page: int = None,
+        limit: int = None,
     ) -> Tuple[List[Company], int]:
         """获取企业列表"""
         qs = (
@@ -22,22 +22,15 @@ class CompanyService(BaseService["Company"]):
             .filter(Company.is_del == 0)
             .order_by(Company.sort)
         )
-
-        total = qs.count()
-        qs = qs.offset((page - 1) * limit).limit(limit)
-        return qs.all(), total
+        return self.pagination(qs, page, limit)
 
     async def add(self, model: schemas.CompanyAdd):
         """新增企业"""
-        data = model.dict(exclude_unset=True)
-        ins = await self.create(data)
-        return ins
+        return await self.create(model.dict())
 
     async def edit(self, ins: Company, *, model: schemas.CompanyEdit):
         """修改企业"""
-        data = model.dict(exclude_unset=True)
-        ins = await self.update(ins, model=data)
-        return ins
+        return await self.update(ins, model=model.dict(exclude_unset=True))
 
     async def get_by_id(self, id: int) -> Optional[Company]:
         """从数据库获取企业 - 企业id"""

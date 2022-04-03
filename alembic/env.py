@@ -16,7 +16,7 @@ fileConfig(config.config_file_name)
 # add your model's MetaData object here
 # for 'autogenerate' support
 from app.core.config import settings
-from app.db.base import Base
+from app.models import Base
 
 target_metadata = Base.metadata
 
@@ -39,7 +39,7 @@ def run_migrations_offline():
 
     """
     context.configure(
-        url=settings.SQLALCHEMY_DATABASE_URL,
+        url=settings.SQLALCHEMY_DATABASE_URI,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -57,7 +57,7 @@ def run_migrations_online():
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = settings.SQLALCHEMY_DATABASE_URL
+    configuration["sqlalchemy.url"] = settings.SQLALCHEMY_DATABASE_URI
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

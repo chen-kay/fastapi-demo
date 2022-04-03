@@ -7,12 +7,15 @@ pydantic[dotenv]
 python-multipart
 
 aioredis # redis
+aiomysql
 sqlalchemy
 sqlalchemy_utils
 loguru
 
 # sqlalchemy migrate
 alembic
+
+psutil
 
 pylint
 black

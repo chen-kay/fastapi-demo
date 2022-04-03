@@ -1,11 +1,11 @@
 from typing import Any, Dict, Generic, Optional, Type, TypeVar
 
 from aioredis import Redis
-from app.api.deps import get_redis, get_session
-from app.db.base import Base
+from app.db.deps import get_redis, get_session
+from app.db.session import Base
 from fastapi import Depends
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 ModelType = TypeVar("ModelType", bound=Base)
 
@@ -29,12 +29,21 @@ class BaseService(Generic[ModelType]):
     def redis(self) -> Redis:
         return self._redis
 
+    def pagination(
+        self,
+        qs: Query,
+        page: int,
+        limit: int,
+    ):
+        total = qs.count()
+        qs = qs.offset((page - 1) * limit).limit(limit)
+        return qs.all(), total
+
     async def create(self, model: Dict[str, Any]) -> ModelType:
         ins = self.model(**model)
 
         self.session.add(ins)
         self.session.flush()
-        print(ins)
         return ins
 
     async def update(
@@ -52,22 +61,3 @@ class BaseService(Generic[ModelType]):
         self.session.add(ins)
         self.session.flush()
         return ins
-
-    async def delete(
-        self,
-        ins: ModelType,
-        *,
-        model: Dict[str, Any] = {},
-    ):
-        obj_data = jsonable_encoder(ins)
-        for field in obj_data:
-            if field in model:
-                setattr(ins, field, model[field])
-
-        ins.is_del = 1
-        self.session.add(ins)
-        self.session.flush()
-        return ins
-
-    def __del__(self):
-        self.session.commit()

@@ -1,7 +1,7 @@
 """Company Model."""
 
-from app.db.base_class import Base
-from sqlalchemy import Column, Date, Integer, String
+from app.db.session import Base
+from sqlalchemy import Column, Date, Integer, String, Text
 
 
 class Company(Base):
@@ -9,14 +9,14 @@ class Company(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
-    domain = Column(String, comment="域名", index=True, unique=True)
-    name = Column(String, comment="企业名称")
+    domain = Column(String(50), comment="域名", index=True, unique=True)
+    name = Column(String(50), comment="企业名称")
 
-    short_name = Column(String, comment="简称")
-    website = Column(String, comment="官网")
+    short_name = Column(String(20), comment="简称")
+    website = Column(String(50), comment="官网")
 
     sort = Column(Integer, comment="顺序", default=100, server_default="100")
-    remark = Column(String, comment="备注")
+    remark = Column(Text, comment="备注")
 
     status = Column(
         Integer,
@@ -32,6 +32,8 @@ class Company(Base):
         server_default="0",
         comment="逻辑删除:0=未删除,1=删除",
     )
+
+    __tablename__ = "company"
     __table__args__ = {
         "comment": "企业",
     }

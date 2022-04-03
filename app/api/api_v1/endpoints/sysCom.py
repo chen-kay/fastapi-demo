@@ -33,7 +33,7 @@ async def add(
     company_service: CompanyService = Depends(CompanyService),
     user_service: UserService = Depends(UserService),
 ):
-    if await company_service.check_code_exists(model.code):
+    if await company_service.check_domain_exists(model.domain):
         raise exceptions.ExistsError()
     if await company_service.check_name_exists(model.name):
         raise exceptions.ExistsError()

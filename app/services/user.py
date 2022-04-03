@@ -9,7 +9,12 @@ from .base import BaseService
 
 
 class UserService(BaseService["User"]):
-    model: User = User
+    model = User
+
+    async def add(self, model: schemas.UserAdd, is_superuser: int = 0):
+        create_data = model.dict()
+        create_data["is_superuser"] = is_superuser
+        return await self.create(create_data)
 
     async def create_admin_user(self, ins: Company):
         model = dict(
@@ -20,7 +25,7 @@ class UserService(BaseService["User"]):
             hashed_password=get_password_hash("123456"),
             is_admin=1,
         )
-        ins = await self.create(model)
+        ins = await self.add(model)
         return ins
 
     async def get_by_id(self, id: int) -> Optional[User]:

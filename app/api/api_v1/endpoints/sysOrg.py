@@ -14,7 +14,7 @@ router = APIRouter()
     response_model=schemas.Pageination[schemas.OrgType],
 )
 async def list(
-    filters: schemas.OrgQuery,
+    filters: schemas.OrgQuery = Depends(),
     control: OrgController = Depends(),
 ):
     result, total = await control.get_list(filters)

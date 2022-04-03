@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseSettings
 
-SQLITE_DATABASE_URL = "sqlite:///db.sqlite3?check_same_thread=False"
+SQLITE_DATABASE_URI = "sqlite:///db.sqlite3?check_same_thread=False"
 
 
 class Settings(BaseSettings):
@@ -37,9 +37,13 @@ class Settings(BaseSettings):
 
     DATABASE_NAME: str = "fastapi_demo"
     # mysql+pymysql://{user}:{password}@{host}:{port}/{database}?charset=utf8
-    SQLALCHEMY_DATABASE_URL: Optional[str] = SQLITE_DATABASE_URL
+    DATABASE_URI: Optional[str] = SQLITE_DATABASE_URI
+    SQLALCHEMY_DATABASE_URI: Optional[str] = SQLITE_DATABASE_URI
     # redis://:{password}@{host}:{port}/{db}?charset=utf8
     REDIS_URL: Optional[str] = None
+
+    FIRST_SUPERUSER: str = "admin"
+    FIRST_SUPERUSER_PASSWORD: str = "admin"
 
     class Config:
         case_sensitive = True

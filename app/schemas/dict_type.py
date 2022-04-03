@@ -1,28 +1,19 @@
 """Schemas DictType Model."""
-from pydantic import BaseModel
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class DictTypeType(BaseModel):
-    id: int
+    id: int = Field(..., title="主键")
 
-    code: str
-    name: str
+    code: str = Field(..., title="唯一编码")
+    name: str = Field(..., title="字典名")
 
-    sort: int
-    remark: str
+    sort: Optional[int] = Field(None, title="顺序")
+    remark: Optional[str] = Field(None, title="备注")
 
-    class Config:
-        orm_mode = True
-
-
-class DictValueType(BaseModel):
-    company_id: int
-
-    code: str
-    value: str
-
-    sort: int = 100
-    remark: str = ""
+    status: int = Field(..., title="状态")
 
     class Config:
         orm_mode = True

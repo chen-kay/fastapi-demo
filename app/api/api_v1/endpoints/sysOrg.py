@@ -1,7 +1,6 @@
 from typing import List
 
 from app import schemas
-from app.controller import OrgController
 from app.core import exceptions
 from fastapi import APIRouter, Depends
 

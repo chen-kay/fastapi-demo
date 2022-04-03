@@ -1,5 +1,5 @@
 from app.api import deps
-from app.api.api_v1.endpoints import login, sysCom
+from app.api.api_v1.endpoints import login, sysCom, sysDictData, sysDictType
 # from app.api.api_v1.endpoints import current, enterp, group, login
 from fastapi import APIRouter, Depends
 
@@ -14,18 +14,18 @@ api_router.include_router(
     prefix="/sysCom",
     dependencies=[Depends(deps.get_current_active_superuser)],
 )
-# api_router.include_router(
-#     sysDictType.router,
-#     tags=["sysDictType"],
-#     prefix="/sysDictType",
-#     dependencies=[Depends(deps.get_current_active_user)],
-# )
-# api_router.include_router(
-#     sysDictData.router,
-#     tags=["sysDictData"],
-#     prefix="/sysDictData",
-#     dependencies=[Depends(deps.get_current_active_user)],
-# )
+api_router.include_router(
+    sysDictType.router,
+    tags=["sysDictType"],
+    prefix="/sysDictType",
+    dependencies=[Depends(deps.get_current_active_user)],
+)
+api_router.include_router(
+    sysDictData.router,
+    tags=["sysDictData"],
+    prefix="/sysDictData",
+    dependencies=[Depends(deps.get_current_active_user)],
+)
 # api_router.include_router(
 #     sysOrg.router,
 #     tags=["sysOrg"],

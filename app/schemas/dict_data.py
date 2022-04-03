@@ -1,40 +1,52 @@
 """Schemas DictData Model."""
-from pydantic import BaseModel
+from dataclasses import dataclass
+from typing import Optional
+
+from fastapi import Query
+from pydantic import BaseModel, Field
+
+from .base import Pagination
+
+
+@dataclass
+class DictDataFilter(Pagination):
+    parent_id: Optional[int] = Query(None, title="归属字典id")
+    company_id: Optional[int] = Query(None, title="归属企业id")
 
 
 class DictDataType(BaseModel):
-    id: int
+    id: int = Field(..., title="主键")
 
-    code: str
-    value: str
+    code: str = Field(..., title="唯一编码")
+    value: str = Field(..., title="字典值")
 
-    sort: int
-    remark: str
+    sort: Optional[int] = Field(None, title="顺序")
+    remark: Optional[str] = Field(None, title="备注")
 
     class Config:
         orm_mode = True
 
 
 class DictDataAdd(BaseModel):
-    company_id: int = None
-    parent_id: int
+    company_id: int = Field(None, title="归属企业id")
+    parent_id: int = Field(..., title="归属字典id")
 
-    code: str
-    value: str
+    code: str = Field(..., title="唯一编码")
+    value: str = Field(..., title="字典值")
 
-    sort: int = 100
-    remark: str = ""
+    sort: Optional[int] = Field(None, title="顺序")
+    remark: Optional[str] = Field(None, title="备注")
 
     class Config:
         orm_mode = True
 
 
 class DictDataEdit(BaseModel):
-    code: str
-    value: str
+    code: str = Field(..., title="唯一编码")
+    value: str = Field(..., title="字典值")
 
-    sort: int = 100
-    remark: str = ""
+    sort: Optional[int] = Field(None, title="顺序")
+    remark: Optional[str] = Field(None, title="备注")
 
     class Config:
         orm_mode = True

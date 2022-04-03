@@ -14,6 +14,7 @@ class User(Base):
     org_id = Column(Integer, ForeignKey("org.id"))
     org = relationship("Org", foreign_keys=[org_id])
 
+    user_name = Column(String(100), comment="账号", unique=True, index=True)
     username = Column(String(50), comment="账号", index=True)
     fullname = Column(String(50), comment="姓名")
 

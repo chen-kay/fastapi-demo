@@ -1,8 +1,9 @@
-from app import schemas
-from app.api import auth
+from app import schemas, services
+from app.api import deps
 from app.core import exceptions
-from app.services import DictDataService, DictTypeService, UserService
+from app.db.deps import get_session
 from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -13,25 +14,13 @@ router = APIRouter()
     response_model=schemas.Pageination[schemas.DictDataType],
 )
 async def list(
-    parent_id: int,
-    company_id: int = None,
-    page: int = 1,
-    limit: int = 10,
-    user_service: UserService = Depends(UserService),
-    dict_data_service: DictDataService = Depends(DictDataService),
-    current: schemas.UserModel = Depends(auth.get_current_active_user),
+    filters: schemas.DictDataFilter = Depends(),
+    db: Session = Depends(get_session),
+    current: schemas.UserModel = Depends(deps.get_current_active_user),
 ):
-    company_id = None
-    if not user_service.is_superuser(current):
-        company_id = company_id
-    else:
-        company_id = company_id
-    result, total = await dict_data_service.get_list(
-        parent_id=parent_id,
-        company_id=company_id,
-        page=page,
-        limit=limit,
-    )
+    if not services.user.is_superuser(current):
+        filters.company_id = current.company_id
+    result, total = await services.dict_data.get_pagination(db, filters=filters)
     return dict(data=result, total=total)
 
 
@@ -42,21 +31,20 @@ async def list(
 )
 async def add(
     model: schemas.DictDataAdd,
-    user_service: UserService = Depends(UserService),
-    dict_data_service: DictDataService = Depends(DictDataService),
-    dict_type_service: DictTypeService = Depends(DictTypeService),
-    current: schemas.UserModel = Depends(auth.get_current_active_user),
+    db: Session = Depends(get_session),
+    current: schemas.UserModel = Depends(deps.get_current_active_user),
 ):
-    if not await dict_type_service.get_by_id(model.parent_id):
+    if not await services.dict_type.get_by_id(db, id=model.parent_id):
         raise exceptions.NotFoundError()
-    if await dict_data_service.check_code_exists(model.code):
+    if await services.dict_data.check_code_exists(db, code=model.code):
         raise exceptions.ExistsError()
-    if await dict_data_service.check_value_exists(model.value):
+    if await services.dict_data.check_value_exists(db, value=model.value):
         raise exceptions.ExistsError()
-    if not user_service.is_superuser(current):
+    if not services.user.is_superuser(current):
         model.company_id = current.company_id
 
-    await dict_data_service.add(model)
+    await services.dict_data.add(db, model=model)
+    db.commit()
     return dict(msg="操作成功")
 
 
@@ -68,17 +56,18 @@ async def add(
 async def edit(
     pk: int,
     model: schemas.DictDataEdit,
-    dict_data_service: DictDataService = Depends(DictDataService),
+    db: Session = Depends(get_session),
 ):
-    ins = await dict_data_service.get_by_id(pk)
+    ins = await services.dict_data.get_by_id(db, id=pk)
     if not ins:
         raise exceptions.NotFoundError()
-    if await dict_data_service.check_code_exists(model.code, ins=ins):
+    if await services.dict_data.check_code_exists(db, code=model.code, ins=ins):
         raise exceptions.ExistsError()
-    if await dict_data_service.check_value_exists(model.value, ins=ins):
+    if await services.dict_data.check_value_exists(db, value=model.value, ins=ins):
         raise exceptions.ExistsError()
 
-    await dict_data_service.edit(ins, model=model)
+    await services.dict_data.edit(db, ins=ins, model=model)
+    db.commit()
     return dict(msg="操作成功")
 
 
@@ -89,11 +78,12 @@ async def edit(
 )
 async def delete(
     pk: int,
-    dict_data_service: DictDataService = Depends(DictDataService),
+    db: Session = Depends(get_session),
 ):
-    ins = await dict_data_service.get_by_id(pk)
+    ins = await services.dict_data.get_by_id(db, id=pk)
     if not ins:
         raise exceptions.NotFoundError()
 
-    await dict_data_service.delete(ins)
+    await services.dict_data.delete(db, ins=ins)
+    db.commit()
     return dict(msg="操作成功")

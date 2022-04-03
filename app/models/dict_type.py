@@ -16,6 +16,13 @@ class DictType(Base):
 
     status = Column(Integer, comment="状态 1.正常 2.禁用", default=1, server_default="1")
 
+    is_del = Column(
+        Integer,
+        default=0,
+        server_default="0",
+        comment="逻辑删除:0=未删除,1=删除",
+    )
+
     __tablename__ = "dict_type"
     __table__args__ = {
         "comment": "字典",

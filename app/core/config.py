@@ -31,7 +31,7 @@ class Settings(BaseSettings):
 
     # 默认管理员账号密码等信息
     ADMIN_USERNAME: str = "admin"
-    ADMIN_PASSWORD: str = "123456"
+    ADMIN_PASSWORD: str = "admin"
     ADMIN_NICKNAME: str = "admin"
     ADMIN_EMAIL: str = "l1328076914@gmail.com"
 
@@ -42,8 +42,11 @@ class Settings(BaseSettings):
     # redis://:{password}@{host}:{port}/{db}?charset=utf8
     REDIS_URL: Optional[str] = None
 
+    FIRST_SUPERDOMAIN:str = 'system'
     FIRST_SUPERUSER: str = "admin"
     FIRST_SUPERUSER_PASSWORD: str = "admin"
+    FIRST_ADMINUSER:str = 'admin'
+    FIRST_ADMIN_PASSWORD: str = '123456'
 
     class Config:
         case_sensitive = True

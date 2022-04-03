@@ -1,12 +1,10 @@
-from datetime import timedelta
-
-from app import schemas
+from app import schemas, services
 from app.core import security
-from app.core.config import settings
 from app.core.exceptions import APIException
-from app.services import UserService
+from app.db.deps import get_session
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -14,12 +12,12 @@ router = APIRouter()
 @router.post("/login", summary="登录认证", response_model=schemas.Token)
 async def login(
     data: OAuth2PasswordRequestForm = Depends(),
-    user_service: UserService = Depends(UserService),
+    db: Session = Depends(get_session),
 ):
-    user = await user_service.authenticate(
-        username=data.username, password=data.password
+    user = await services.user.authenticate(
+        db, user_name=data.username, password=data.password
     )
-    if not user or not user_service.is_active(user):
+    if not user or not services.user.is_active(user):
         raise APIException("用户名密码错误")
 
     access_token = security.create_access_token(user.id)

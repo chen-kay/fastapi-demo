@@ -20,6 +20,13 @@ class DictData(Base):
     sort = Column(Integer, comment="顺序", default=100, server_default="100")
     remark = Column(Text, comment="备注")
 
+    is_del = Column(
+        Integer,
+        default=0,
+        server_default="0",
+        comment="逻辑删除:0=未删除,1=删除",
+    )
+
     __tablename__ = "dict_data"
     __table__args__ = {
         "comment": "字典数据",

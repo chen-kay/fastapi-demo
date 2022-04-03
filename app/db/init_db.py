@@ -6,15 +6,18 @@ from sqlalchemy.orm import Session
 
 
 async def init_db(db: Session) -> None:
-    # Base.metadata.create_all(bind=engine)
-
+    logger.info("Creating Super User")
     user_service = UserService(db)
-    logger.info("Creating Admin User")
-    user = await user_service.get_by_username(settings.FIRST_SUPERUSER)
+    user_name = f"{settings.FIRST_SUPERUSER}@{settings.FIRST_SUPERDOMAIN}"
+    user = await user_service.get_by_user_name(user_name)
     if not user:
         user_in = schemas.UserAdd(
             username=settings.FIRST_SUPERUSER,
             fullname=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
         )
-        user = await user_service.add(user_in, is_superuser=1)
+        user = await user_service.add(
+            user_in,
+            is_superuser=1,
+            user_name=user_name,
+        )

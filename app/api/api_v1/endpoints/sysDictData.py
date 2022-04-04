@@ -37,9 +37,9 @@ async def add(
     if not await services.dict_type.get_by_id(db, id=model.parent_id):
         raise exceptions.NotFoundError()
     if await services.dict_data.check_code_exists(db, code=model.code):
-        raise exceptions.ExistsError()
+        raise exceptions.ExistsError("新增失败: 字典编码重复, 请检查code参数")
     if await services.dict_data.check_value_exists(db, value=model.value):
-        raise exceptions.ExistsError()
+        raise exceptions.ExistsError("新增失败: 字典值重复, 请检查value参数")
     if not services.user.is_superuser(current):
         model.company_id = current.company_id
 
@@ -62,9 +62,9 @@ async def edit(
     if not ins:
         raise exceptions.NotFoundError()
     if await services.dict_data.check_code_exists(db, code=model.code, ins=ins):
-        raise exceptions.ExistsError()
+        raise exceptions.ExistsError("编辑失败: 字典编码重复, 请检查code参数")
     if await services.dict_data.check_value_exists(db, value=model.value, ins=ins):
-        raise exceptions.ExistsError()
+        raise exceptions.ExistsError("编辑失败: 字典值重复, 请检查code参数")
 
     await services.dict_data.edit(db, ins=ins, model=model)
     db.commit()

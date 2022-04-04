@@ -1,8 +1,12 @@
 from typing import List
 
-from app import schemas
+from aioredis import Redis
+from app import schemas, services
+from app.api.deps import get_current_active_user
 from app.core import exceptions
+from app.db.deps import get_redis, get_session
 from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -14,10 +18,32 @@ router = APIRouter()
 )
 async def list(
     filters: schemas.OrgQuery = Depends(),
-    control: OrgController = Depends(),
+    db: Session = Depends(get_session),
+    redis: Redis = Depends(get_redis),
+    current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    result, total = await control.get_list(filters)
-    return dict(data=result, total=total)
+    company_id = filters.company_id
+    parent_ids = None
+    if not services.user.is_superuser(current):
+        company_id = current.company_id
+    org_data = await services.org.get_org_data(db, company_id=company_id, redis=redis)
+    if filters.parent_id:
+        parent_ids = services.org.get_sub_org_ids(filters.parent_id, org_data)
+    qs = await services.org.get_list(
+        db,
+        company_id=company_id,
+        parent_id=filters.parent_id,
+        parent_ids=parent_ids,
+        name=filters.name,
+        keyword=filters.keyword,
+    )
+    result, total = services.org.get_pagination(
+        qs,
+        page=filters.page,
+        limit=filters.page_size,
+    )
+    data = services.org.get_list_data(result, org_data=org_data)
+    return dict(data=data, total=total)
 
 
 @router.post(
@@ -27,9 +53,15 @@ async def list(
 )
 async def add(
     model: schemas.OrgAdd,
-    control: OrgController = Depends(),
+    db: Session = Depends(get_session),
 ):
-    await control.add(model)
+    if await services.org.check_code_exists(db, code=model.code):
+        raise exceptions.ExistsError("新增失败: 组织机构编码重复, 请检查code参数")
+    if await services.org.check_name_exists(db, name=model.name):
+        raise exceptions.ExistsError("新增失败: 组织机构名称重复, 请检查name参数")
+
+    await services.org.add(db, model=model)
+    db.commit()
     return dict(msg="操作成功")
 
 
@@ -41,12 +73,25 @@ async def add(
 async def edit(
     pk: int,
     model: schemas.OrgEdit,
-    control: OrgController = Depends(),
+    db: Session = Depends(get_session),
+    redis: Redis = Depends(get_redis),
 ):
-    ins = await control.org.get_by_id(pk)
+    ins = await services.org.get_by_id(db, id=pk)
     if not ins:
         raise exceptions.NotFoundError()
-    await control.edit(ins, model=model)
+    data = await services.org.get_org_data(db, company_id=ins.company_id, redis=redis)
+    parent_ids = services.org.get_parent_ids(model.parent_id, data)
+    if ins.id == model.parent_id:
+        raise exceptions.ValidateError("编辑失败：父节点不能和本节点一致，请重新选择父节点")
+    if ins.id in parent_ids:
+        raise exceptions.ValidateError("编辑失败: 父节点不能为本节点的子节点, 请重新选择父节点")
+    if await services.org.check_code_exists(db, code=model.code, ins=ins):
+        raise exceptions.ExistsError("编辑失败: 组织机构编码重复, 请检查code参数")
+    if await services.org.check_name_exists(db, name=model.name, ins=ins):
+        raise exceptions.ExistsError("编辑失败: 组织机构名称重复, 请检查name参数")
+
+    await services.org.edit(db, ins=ins, model=model)
+    db.commit()
     return dict(msg="操作成功")
 
 
@@ -57,13 +102,15 @@ async def edit(
 )
 async def delete(
     pk: int,
-    control: OrgController = Depends(),
+    db: Session = Depends(get_session),
+    redis: Redis = Depends(get_redis),
 ):
-    ins = await control.org.get_by_id(pk)
+    ins = await services.org.get_by_id(db, id=pk)
     if not ins:
         raise exceptions.NotFoundError()
 
-    await control.delete(ins)
+    await services.org.delete(db, ins=ins, redis=redis)
+    db.commit()
     return dict(msg="操作成功")
 
 
@@ -73,20 +120,8 @@ async def delete(
     response_model=List[schemas.OrgTree],
 )
 async def tree(
-    control: OrgController = Depends(),
+    company_id: int = None,
+    db: Session = Depends(get_session),
 ):
-    data = await control.get_tree_list()
-    return data
-
-
-@router.get(
-    "/export",
-    summary="导出组织列表",
-    response_model=List[schemas.OrgType],
-)
-async def list(
-    filters: schemas.OrgQuery,
-    control: OrgController = Depends(),
-):
-    result = await control.export(filters)
-    return result
+    data = await services.org.get_org_data(db, company_id=company_id)
+    return services.org.get_tree_data(data)

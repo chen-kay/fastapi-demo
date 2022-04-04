@@ -20,8 +20,6 @@ class Org(Base):
     sort = Column(Integer, comment="顺序", default=100, server_default="100")
     remark = Column(Text, comment="备注")
 
-    status = Column(Integer, comment="状态 1.正常 2.禁用", default=1, server_default="1")
-
     is_del = Column(
         Integer,
         default=0,

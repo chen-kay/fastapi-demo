@@ -1,3 +1,4 @@
+from .base import OrgModel
 from .company import CompanyAdd, CompanyEdit, CompanyFilter, CompanyOption, CompanyType
 from .dict_data import DictDataAdd, DictDataEdit, DictDataFilter, DictDataType
 from .dict_type import DictTypeType

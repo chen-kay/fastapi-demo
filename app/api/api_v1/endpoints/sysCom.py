@@ -43,9 +43,9 @@ async def add(
     db: Session = Depends(get_session),
 ):
     if await services.company.check_domain_exists(db, domain=model.domain):
-        raise exceptions.ExistsError(f"域名[{model.domain}]已存在.")
+        raise exceptions.ExistsError("新增失败: 企业域名重复, 请检查domain参数")
     if await services.company.check_name_exists(db, name=model.name):
-        raise exceptions.ExistsError(f"企业名称[{model.name}]已存在")
+        raise exceptions.ExistsError("新增失败: 企业名称重复, 请检查name参数")
 
     try:
         # 创建企业
@@ -74,7 +74,7 @@ async def edit(
     if not ins:
         raise exceptions.NotFoundError()
     if await services.company.check_name_exists(db, name=model.name, ins=ins):
-        raise exceptions.ExistsError()
+        raise exceptions.ExistsError("编辑失败: 企业名称重复, 请检查name参数")
 
     await services.company.edit(db, ins=ins, model=model, redis=redis)
     db.commit()
@@ -95,7 +95,7 @@ async def delete(
     if not ins:
         raise exceptions.NotFoundError()
     if ins.status == 1:
-        raise exceptions.ValidateError("企业状态已变更, 请刷新后重试.")
+        raise exceptions.ValidateError("新增失败: 企业必须已禁用或已过期, 请检查企业状态")
 
     await services.company.delete(db, ins=ins, redis=redis)
     db.commit()

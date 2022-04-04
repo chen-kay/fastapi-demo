@@ -7,5 +7,16 @@ from .models.user import UserModel
 from .msg import Msg
 from .org import OrgAdd, OrgEdit, OrgQuery, OrgTree, OrgType
 from .pagination import Pageination
+from .role import (
+    RoleAdd,
+    RoleEdit,
+    RoleGrantData,
+    RoleGrantMenu,
+    RoleOption,
+    RoleOwnData,
+    RoleOwnMenu,
+    RoleQuery,
+    RoleType,
+)
 from .token import Token, TokenPayload
 from .user import UserAdd

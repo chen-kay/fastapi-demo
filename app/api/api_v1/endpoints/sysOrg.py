@@ -54,12 +54,15 @@ async def list(
 async def add(
     model: schemas.OrgAdd,
     db: Session = Depends(get_session),
+    current: schemas.UserModel = Depends(get_current_active_user),
 ):
     if await services.org.check_code_exists(db, code=model.code):
         raise exceptions.ExistsError("新增失败: 组织机构编码重复, 请检查code参数")
     if await services.org.check_name_exists(db, name=model.name):
         raise exceptions.ExistsError("新增失败: 组织机构名称重复, 请检查name参数")
 
+    if not services.user.is_superuser(current):
+        model.company_id = current.company_id
     await services.org.add(db, model=model)
     db.commit()
     return dict(msg="操作成功")
@@ -75,10 +78,14 @@ async def edit(
     model: schemas.OrgEdit,
     db: Session = Depends(get_session),
     redis: Redis = Depends(get_redis),
+    current: schemas.UserModel = Depends(get_current_active_user),
 ):
     ins = await services.org.get_by_id(db, id=pk)
     if not ins:
         raise exceptions.NotFoundError()
+    if not await services.user.check_user_company(current, ins.company_id):
+        raise exceptions.NotFoundError()
+
     data = await services.org.get_org_data(db, company_id=ins.company_id, redis=redis)
     parent_ids = services.org.get_parent_ids(model.parent_id, data)
     if ins.id == model.parent_id:
@@ -104,10 +111,21 @@ async def delete(
     pk: int,
     db: Session = Depends(get_session),
     redis: Redis = Depends(get_redis),
+    current: schemas.UserModel = Depends(get_current_active_user),
 ):
     ins = await services.org.get_by_id(db, id=pk)
     if not ins:
         raise exceptions.NotFoundError()
+    if not await services.user.check_user_company(current, ins.company_id):
+        raise exceptions.NotFoundError()
+    org_data = await services.org.get_org_data(
+        db,
+        company_id=ins.company_id,
+        redis=redis,
+    )
+    parent_ids = services.org.get_sub_org_ids(ins.id, org_data)
+    if await services.org.check_user_exists(db, org_ids=parent_ids):
+        raise exceptions.ValidateError("删除失败: 该机构或子机构下有员工, 无法删除")
 
     await services.org.delete(db, ins=ins, redis=redis)
     db.commit()

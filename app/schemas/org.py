@@ -59,12 +59,12 @@ class OrgEdit(BaseModel):
 
 
 class OrgTree(BaseModel):
-    id: int = Field(..., title="主键")
-    parent_id: int = Field(..., title="上级组织")
+    key: int = Field(..., title="主键", alias="主键")
     value: str = Field(..., title="主键", alias="id")
     title: str = Field(..., title="组织名称", alias="name")
     label: str = Field(..., title="组织名称", alias="name")
 
+    parent_id: int = Field(..., title="上级组织")
     children: List["OrgTree"] = []
 
     class Config:

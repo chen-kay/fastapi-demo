@@ -103,5 +103,12 @@ class UserService(BaseService["User"]):
         """用户是否超级管理员"""
         return bool(user.is_superuser)
 
+    async def check_user_company(
+        self, user: Union[User, schemas.UserModel], company_id: int
+    ):
+        if self.is_superuser(user):
+            return True
+        return user.company_id == company_id
+
 
 user = UserService(User)

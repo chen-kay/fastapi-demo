@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 
 from aioredis import Redis
 from app import schemas
-from app.models import Org
+from app.models import Org, User
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql import or_
 
@@ -20,8 +20,11 @@ class OrgService(BaseService["Org"]):
         parent_ids: List[int] = None,
         name: str = None,
         keyword: str = None,
+        ids: List[int] = None,
     ):
         qs = self.get_queryset(db).filter(Org.is_del == 0, Org.company_id == company_id)
+        if ids:
+            qs = qs.filter(Org.id.in_(ids))
         if parent_id:
             if parent_ids:
                 qs = qs.filter(or_(Org.parent_id.in_(parent_ids), Org.id == parent_id))
@@ -84,6 +87,11 @@ class OrgService(BaseService["Org"]):
         ins = await self.update(db, ins=ins, model=model.dict(exclude_unset=True))
         return ins
 
+    async def delete(self, db: Session, *, ins: Org):
+        """删除组织"""
+        ins = await self.update(db, ins=ins, model=dict(is_del=1))
+        return ins
+
     async def check_code_exists(
         self,
         db: Session,
@@ -95,7 +103,7 @@ class OrgService(BaseService["Org"]):
         qs = db.query(Org).filter(Org.code == code, Org.is_del == 0)
         if ins:
             qs = qs.filter(Org.id != ins.id)
-        return db.query(qs.exists()).scalar()
+        return qs.exists()
 
     async def check_name_exists(
         self,
@@ -108,7 +116,12 @@ class OrgService(BaseService["Org"]):
         qs = db.query(Org).filter(Org.name == name, Org.is_del == 0)
         if ins:
             qs = qs.filter(Org.id != ins.id)
-        return db.query(qs.exists()).scalar()
+        return qs.exists()
+
+    async def check_user_exists(self, db: Session, *, org_ids: List[int]):
+        """验证是否存在用户"""
+        qs = db.query(User).filter(User.org_id.in_(org_ids), User.is_del == 0)
+        return qs.exists()
 
     async def get_org_data(
         self,

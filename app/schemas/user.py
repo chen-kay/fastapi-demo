@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 
 class UserAdd(BaseModel):
-    company_id: Optional[int] = Field(None, title="归属企业")
     org_id: int = Field(0, title="归属组织")
 
     username: str = Field(..., title="账号", max_length=50)

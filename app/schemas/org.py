@@ -12,7 +12,6 @@ from .base import Pagination
 class OrgQuery(Pagination):
     name: str = Query(None, title="机构名称")
     parent_id: int = Query(None, title="上级机构")
-    company_id: int = Query(None, title="归属企业")
 
 
 class OrgType(BaseModel):
@@ -32,7 +31,6 @@ class OrgType(BaseModel):
 
 
 class OrgAdd(BaseModel):
-    company_id: Optional[int] = Field(None, title="归属企业")
     parent_id: int = Field(0, title="上级组织")
 
     code: str = Field(..., title="唯一编码")

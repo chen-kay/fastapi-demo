@@ -80,6 +80,17 @@ class UserService(BaseService["User"]):
         ins = qs.first()
         return ins
 
+    async def switch_company(
+        self,
+        db: Session,
+        *,
+        ins: User,
+        company_id: int,
+    ):
+        """切换企业"""
+        ins = await self.update(db, ins=ins, model=dict(company_id=company_id))
+        return ins
+
     async def authenticate(self, db: Session, *, user_name: str, password: str) -> User:
         """用户认证"""
         user = await self.get_by_user_name(db, user_name=user_name)
@@ -102,13 +113,6 @@ class UserService(BaseService["User"]):
     def is_superuser(self, user: Union[User, schemas.UserModel]) -> bool:
         """用户是否超级管理员"""
         return bool(user.is_superuser)
-
-    async def check_user_company(
-        self, user: Union[User, schemas.UserModel], company_id: int
-    ):
-        if self.is_superuser(user):
-            return True
-        return user.company_id == company_id
 
 
 user = UserService(User)

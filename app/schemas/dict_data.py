@@ -11,7 +11,6 @@ from .base import Pagination
 @dataclass
 class DictDataFilter(Pagination):
     parent_id: Optional[int] = Query(None, title="归属字典id")
-    company_id: Optional[int] = Query(None, title="归属企业id")
 
 
 class DictDataType(BaseModel):
@@ -28,7 +27,6 @@ class DictDataType(BaseModel):
 
 
 class DictDataAdd(BaseModel):
-    company_id: int = Field(None, title="归属企业id")
     parent_id: int = Field(..., title="归属字典id")
 
     code: str = Field(..., title="唯一编码")

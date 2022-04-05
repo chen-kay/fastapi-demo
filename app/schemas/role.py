@@ -1,6 +1,6 @@
 """Schemas Role Model."""
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 from fastapi import Query
 from pydantic import BaseModel, Field
@@ -11,7 +11,6 @@ from .base import Pagination
 @dataclass
 class RoleQuery(Pagination):
     name: str = Query(None, title="角色名称")
-    company_id: int = Query(None, title="归属企业")
 
 
 class RoleType(BaseModel):
@@ -28,8 +27,6 @@ class RoleType(BaseModel):
 
 
 class RoleAdd(BaseModel):
-    company_id: Optional[int] = Field(None, title="归属企业")
-
     code: str = Field(..., title="唯一编码")
     name: str = Field(..., title="角色名称")
 

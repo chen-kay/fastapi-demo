@@ -41,9 +41,6 @@ class OrgService(BaseService["Org"]):
             )
         return qs
 
-    def get_pagination(self, data: Query, *, page: int, limit: int):
-        return self.pagination(data, page=page, limit=limit)
-
     def get_list_data(self, data: List[Org], org_data: Dict[str, schemas.OrgModel]):
         for item in data:
             item.parent_ids = self.get_parent_ids(item.id, org_data)
@@ -62,18 +59,31 @@ class OrgService(BaseService["Org"]):
             result.append(model)
         return result
 
-    async def get_by_id(self, db: Session, *, id: int) -> Optional[Org]:
+    async def get_by_id(
+        self,
+        db: Session,
+        *,
+        id: int,
+        company_id: int,
+    ) -> Optional[Org]:
         """从数据库获取组织 - 组织id"""
         qs = db.query(Org).filter(
             Org.is_del == 0,
             Org.id == id,
+            Org.company_id == company_id,
         )
         ins = qs.first()
         return ins
 
-    async def add(self, db: Session, *, model: schemas.OrgAdd):
+    async def add(self, db: Session, *, model: schemas.OrgAdd, company_id: int):
         """新增组织"""
-        ins = await self.create(db, model=model.dict())
+        ins = await self.create(
+            db,
+            model=dict(
+                **model.dict(),
+                company_id=company_id,
+            ),
+        )
         return ins
 
     async def edit(
@@ -87,7 +97,7 @@ class OrgService(BaseService["Org"]):
         ins = await self.update(db, ins=ins, model=model.dict(exclude_unset=True))
         return ins
 
-    async def delete(self, db: Session, *, ins: Org):
+    async def delete(self, db: Session, *, ins: Org, redis: Redis = None):
         """删除组织"""
         ins = await self.update(db, ins=ins, model=dict(is_del=1))
         return ins
@@ -97,10 +107,15 @@ class OrgService(BaseService["Org"]):
         db: Session,
         *,
         code: str,
+        company_id: int,
         ins: Org = None,
     ):
         """验证编码是否存在"""
-        qs = db.query(Org).filter(Org.code == code, Org.is_del == 0)
+        qs = db.query(Org).filter(
+            Org.code == code,
+            Org.company_id == company_id,
+            Org.is_del == 0,
+        )
         if ins:
             qs = qs.filter(Org.id != ins.id)
         return qs.exists()
@@ -110,10 +125,15 @@ class OrgService(BaseService["Org"]):
         db: Session,
         *,
         name: str,
+        company_id: int,
         ins: Org = None,
     ):
         """验证名称是否存在"""
-        qs = db.query(Org).filter(Org.name == name, Org.is_del == 0)
+        qs = db.query(Org).filter(
+            Org.name == name,
+            Org.company_id == company_id,
+            Org.is_del == 0,
+        )
         if ins:
             qs = qs.filter(Org.id != ins.id)
         return qs.exists()

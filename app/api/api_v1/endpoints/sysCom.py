@@ -2,6 +2,7 @@ from typing import List
 
 from aioredis import Redis
 from app import schemas, services
+from app.api import deps
 from app.core import exceptions
 from app.db.deps import get_redis, get_session
 from fastapi import APIRouter, Depends
@@ -113,3 +114,21 @@ async def option(
 ):
     result = await services.company.get_filter(db, keyword=keyword)
     return result.all()
+
+
+@router.put(
+    "/switch/<int:pk>",
+    summary="切换企业",
+    response_model=List[schemas.Msg],
+)
+async def option(
+    pk: int,
+    db: Session = Depends(get_session),
+    current: schemas.UserModel = Depends(deps.get_current_active_superuser),
+):
+    ins = await services.company.get_by_id(db, id=pk)
+    if not ins:
+        raise exceptions.NotFoundError()
+    await services.user.switch_company(db, ins=current, company_id=pk)
+    db.commit()
+    return dict(msg="操作成功")

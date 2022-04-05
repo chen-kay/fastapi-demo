@@ -1,3 +1,5 @@
+from typing import List
+
 from aioredis import Redis
 from app import schemas, services
 from app.api.deps import get_current_active_user
@@ -19,12 +21,9 @@ async def list(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    company_id = filters.company_id
-    if not services.user.is_superuser(current):
-        company_id = current.company_id
     qs = await services.role.get_list(
         db,
-        company_id=company_id,
+        company_id=current.company_id,
         name=filters.name,
         keyword=filters.keyword,
     )
@@ -46,14 +45,20 @@ async def add(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    if await services.role.check_code_exists(db, code=model.code):
+    if await services.role.check_code_exists(
+        db,
+        code=model.code,
+        company_id=current.company_id,
+    ):
         raise exceptions.ExistsError("新增失败: 角色机构编码重复, 请检查code参数")
-    if await services.role.check_name_exists(db, name=model.name):
+    if await services.role.check_name_exists(
+        db,
+        name=model.name,
+        company_id=current.company_id,
+    ):
         raise exceptions.ExistsError("新增失败: 角色机构名称重复, 请检查name参数")
 
-    if not services.user.is_superuser(current):
-        model.company_id = current.company_id
-    await services.role.add(db, model=model)
+    await services.role.add(db, model=model, company_id=current.company_id)
     db.commit()
     return dict(msg="操作成功")
 
@@ -69,14 +74,22 @@ async def edit(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    ins = await services.role.get_by_id(db, id=pk)
+    ins = await services.role.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
         raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
-        raise exceptions.NotFoundError()
-    if await services.role.check_code_exists(db, code=model.code, ins=ins):
+    if await services.role.check_code_exists(
+        db,
+        code=model.code,
+        company_id=current.company_id,
+        ins=ins,
+    ):
         raise exceptions.ExistsError("编辑失败: 角色编码重复, 请检查code参数")
-    if await services.role.check_name_exists(db, name=model.name, ins=ins):
+    if await services.role.check_name_exists(
+        db,
+        name=model.name,
+        company_id=current.company_id,
+        ins=ins,
+    ):
         raise exceptions.ExistsError("编辑失败: 角色名称重复, 请检查name参数")
 
     await services.role.edit(db, ins=ins, model=model)
@@ -95,10 +108,8 @@ async def delete(
     redis: Redis = Depends(get_redis),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    ins = await services.role.get_by_id(db, id=pk)
+    ins = await services.role.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
-        raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
         raise exceptions.NotFoundError()
     if await services.role.check_user_exists(db, role_id=ins.id):
         raise exceptions.ValidateError("删除失败: 该角色下有员工, 无法删除")
@@ -109,7 +120,7 @@ async def delete(
 
 
 @router.put(
-    "/grantMenu",
+    "/grantMenu/<int:pk>",
     summary="授权菜单",
     response_model=schemas.Msg,
 )
@@ -119,10 +130,8 @@ async def grantMenu(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    ins = await services.role.get_by_id(db, id=pk)
+    ins = await services.role.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
-        raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
         raise exceptions.NotFoundError()
 
     access = await services.access.get_list(db, ids=model.access_ids)
@@ -133,7 +142,7 @@ async def grantMenu(
 
 
 @router.put(
-    "/grantData",
+    "/grantData/<int:pk>",
     summary="授权数据",
     response_model=schemas.Msg,
 )
@@ -143,10 +152,8 @@ async def grantData(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    ins = await services.role.get_by_id(db, id=pk)
+    ins = await services.role.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
-        raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
         raise exceptions.NotFoundError()
 
     orgs = await services.org.get_list(db, company_id=ins.company_id, ids=model.org_ids)
@@ -157,7 +164,7 @@ async def grantData(
 
 
 @router.get(
-    "/ownMenu",
+    "/ownMenu/<int:pk>",
     summary="已授权菜单",
     response_model=schemas.RoleOwnMenu,
 )
@@ -166,10 +173,8 @@ async def ownMenu(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    ins = await services.role.get_by_id(db, id=pk)
+    ins = await services.role.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
-        raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
         raise exceptions.NotFoundError()
 
     ins.access_ids = [r.id for r in ins.access]
@@ -177,7 +182,7 @@ async def ownMenu(
 
 
 @router.get(
-    "/ownData",
+    "/ownData/<int:pk>",
     summary="已授权数据",
     response_model=schemas.RoleOwnData,
 )
@@ -186,11 +191,27 @@ async def ownData(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    ins = await services.role.get_by_id(db, id=pk)
+    ins = await services.role.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
-        raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
         raise exceptions.NotFoundError()
 
     ins.org_ids = [r.id for r in ins.orgs]
     return ins
+
+
+@router.get(
+    "/option",
+    summary="角色下拉框",
+    response_model=List[schemas.RoleOption],
+)
+async def option(
+    keyword: str = None,
+    db: Session = Depends(get_session),
+    current: schemas.UserModel = Depends(get_current_active_user),
+):
+    result = await services.role.get_list(
+        db,
+        company_id=current.company_id,
+        keyword=keyword,
+    )
+    return result.all()

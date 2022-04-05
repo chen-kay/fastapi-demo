@@ -34,18 +34,38 @@ class RoleService(BaseService["Role"]):
     def get_pagination(self, data: Query, *, page: int, limit: int):
         return self.pagination(data, page=page, limit=limit)
 
-    async def get_by_id(self, db: Session, *, id: int) -> Optional[Role]:
+    async def get_by_id(
+        self,
+        db: Session,
+        *,
+        id: int,
+        company_id: int = None,
+    ) -> Optional[Role]:
         """从数据库获取组织 - 组织id"""
         qs = db.query(Role).filter(
             Role.is_del == 0,
             Role.id == id,
         )
+        if company_id:
+            qs = qs.filter(Role.company_id == company_id)
         ins = qs.first()
         return ins
 
-    async def add(self, db: Session, *, model: schemas.RoleAdd):
+    async def add(
+        self,
+        db: Session,
+        *,
+        model: schemas.RoleAdd,
+        company_id: int,
+    ):
         """新增组织"""
-        ins = await self.create(db, model=model.dict())
+        ins = await self.create(
+            db,
+            model=dict(
+                **model.dict(),
+                company_id=company_id,
+            ),
+        )
         return ins
 
     async def edit(
@@ -82,10 +102,15 @@ class RoleService(BaseService["Role"]):
         db: Session,
         *,
         code: str,
+        company_id: int,
         ins: Role = None,
     ):
         """验证编码是否存在"""
-        qs = db.query(Role).filter(Role.code == code, Role.is_del == 0)
+        qs = db.query(Role).filter(
+            Role.code == code,
+            Role.company_id == company_id,
+            Role.is_del == 0,
+        )
         if ins:
             qs = qs.filter(Role.id != ins.id)
         return db.query(qs.exists()).scalar()
@@ -95,10 +120,15 @@ class RoleService(BaseService["Role"]):
         db: Session,
         *,
         name: str,
+        company_id: int,
         ins: Role = None,
     ):
         """验证名称是否存在"""
-        qs = db.query(Role).filter(Role.name == name, Role.is_del == 0)
+        qs = db.query(Role).filter(
+            Role.name == name,
+            Role.company_id == company_id,
+            Role.is_del == 0,
+        )
         if ins:
             qs = qs.filter(Role.id != ins.id)
         return db.query(qs.exists()).scalar()

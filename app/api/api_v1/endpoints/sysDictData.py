@@ -18,9 +18,17 @@ async def list(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(deps.get_current_active_user),
 ):
-    if not services.user.is_superuser(current):
-        filters.company_id = current.company_id
-    result, total = await services.dict_data.get_pagination(db, filters=filters)
+    qs = await services.dict_data.get_list(
+        db,
+        company_id=current.company_id,
+        parent_id=filters.parent_id,
+        keyword=filters.keyword,
+    )
+    result, total = services.dict_data.pagination(
+        qs,
+        page=filters.page,
+        limit=filters.page_size,
+    )
     return dict(data=result, total=total)
 
 
@@ -41,9 +49,7 @@ async def add(
     if await services.dict_data.check_value_exists(db, value=model.value):
         raise exceptions.ExistsError("新增失败: 字典值重复, 请检查value参数")
 
-    if not services.user.is_superuser(current):
-        model.company_id = current.company_id
-    await services.dict_data.add(db, model=model)
+    await services.dict_data.add(db, model=model, company_id=current.company_id)
     db.commit()
     return dict(msg="操作成功")
 
@@ -59,10 +65,8 @@ async def edit(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(deps.get_current_active_user),
 ):
-    ins = await services.dict_data.get_by_id(db, id=pk)
+    ins = await services.dict_data.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
-        raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
         raise exceptions.NotFoundError()
     if await services.dict_data.check_code_exists(db, code=model.code, ins=ins):
         raise exceptions.ExistsError("编辑失败: 字典编码重复, 请检查code参数")
@@ -84,10 +88,8 @@ async def delete(
     db: Session = Depends(get_session),
     current: schemas.UserModel = Depends(deps.get_current_active_user),
 ):
-    ins = await services.dict_data.get_by_id(db, id=pk)
+    ins = await services.dict_data.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
-        raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
         raise exceptions.NotFoundError()
 
     await services.dict_data.delete(db, ins=ins)

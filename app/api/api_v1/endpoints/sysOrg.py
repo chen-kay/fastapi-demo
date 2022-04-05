@@ -22,22 +22,23 @@ async def list(
     redis: Redis = Depends(get_redis),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    company_id = filters.company_id
     parent_ids = None
-    if not services.user.is_superuser(current):
-        company_id = current.company_id
-    org_data = await services.org.get_org_data(db, company_id=company_id, redis=redis)
+    org_data = await services.org.get_org_data(
+        db,
+        company_id=current.company_id,
+        redis=redis,
+    )
     if filters.parent_id:
         parent_ids = services.org.get_sub_org_ids(filters.parent_id, org_data)
     qs = await services.org.get_list(
         db,
-        company_id=company_id,
+        company_id=current.company_id,
         parent_id=filters.parent_id,
         parent_ids=parent_ids,
         name=filters.name,
         keyword=filters.keyword,
     )
-    result, total = services.org.get_pagination(
+    result, total = services.dict_data.pagination(
         qs,
         page=filters.page,
         limit=filters.page_size,
@@ -61,9 +62,7 @@ async def add(
     if await services.org.check_name_exists(db, name=model.name):
         raise exceptions.ExistsError("新增失败: 组织机构名称重复, 请检查name参数")
 
-    if not services.user.is_superuser(current):
-        model.company_id = current.company_id
-    await services.org.add(db, model=model)
+    await services.org.add(db, model=model, company_id=current.company_id)
     db.commit()
     return dict(msg="操作成功")
 
@@ -80,10 +79,8 @@ async def edit(
     redis: Redis = Depends(get_redis),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    ins = await services.org.get_by_id(db, id=pk)
+    ins = await services.org.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
-        raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
         raise exceptions.NotFoundError()
 
     data = await services.org.get_org_data(db, company_id=ins.company_id, redis=redis)
@@ -113,10 +110,8 @@ async def delete(
     redis: Redis = Depends(get_redis),
     current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    ins = await services.org.get_by_id(db, id=pk)
+    ins = await services.org.get_by_id(db, id=pk, company_id=current.company_id)
     if not ins:
-        raise exceptions.NotFoundError()
-    if not await services.user.check_user_company(current, ins.company_id):
         raise exceptions.NotFoundError()
     org_data = await services.org.get_org_data(
         db,
@@ -138,8 +133,8 @@ async def delete(
     response_model=List[schemas.OrgTree],
 )
 async def tree(
-    company_id: int = None,
     db: Session = Depends(get_session),
+    current: schemas.UserModel = Depends(get_current_active_user),
 ):
-    data = await services.org.get_org_data(db, company_id=company_id)
+    data = await services.org.get_org_data(db, company_id=current.company_id)
     return services.org.get_tree_data(data)
